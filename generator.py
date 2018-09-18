@@ -45,7 +45,8 @@ class SpatioTemporalHawkesLam(Lam):
         return self.maximum
 
     def __str__(self):
-        return 'Spatio-temporal Hawkes point process intensity'
+        return 'Spatio-temporal Hawkes point process intensity with mu=%1.f, beta=%1.f, sigma=%s' \
+            % (self.mu, self.beta, self.sigma)
 
 def homogeneous_poisson_process(lam, T, S):
     '''
@@ -120,12 +121,12 @@ def inhomogeneous_poisson_process(lam, T, S):
     return retained_points
 
 if __name__ == '__main__':
-    np.random.seed(0)
+    # np.random.seed(0)
     np.set_printoptions(suppress=True)
 
     # lam = 10
     T   = (0, 10)
     S   = [(0, 1), (0, 1)]
     # print(generate_homogeneous_poisson_process(lam, T, S))
-    lam = SpatioTemporalHawkesLam(mu=5., alpha=1., beta=1., sigma=[1., 2.])
+    lam = SpatioTemporalHawkesLam(mu=1., alpha=1., beta=1., sigma=[1., 1.])
     print(inhomogeneous_poisson_process(lam, T, S))
