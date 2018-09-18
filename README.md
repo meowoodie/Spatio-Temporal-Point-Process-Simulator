@@ -44,4 +44,5 @@ And see the console output below.
 ```
 
 Here an animation of variation of spatial intensities as time goes by has also been provided, simulated by a Spatio-temporal Hawkes Point process.
+
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/hpp_clips.gif">
