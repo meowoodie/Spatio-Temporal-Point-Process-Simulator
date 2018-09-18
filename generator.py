@@ -20,16 +20,24 @@ class SpatioTemporalHawkesLam(Lam):
         self.maximum = maximum
 
     def value(self, seq_t, seq_s):
-        '''return the intensity value at (t, s)'''
+        '''
+        return the intensity value at (t, s).
+        The last element of seq_t and seq_s is the location (t, s) that we are
+        going to inspect. Prior to that are the past locations which have
+        occurred.
+        '''
         # kernel function (clustering density)
         # t is a scalar or a vector.
         def nu(t, s, C=1.):
             return (C/(2*np.pi*np.prod(self.sigma)*t)) * \
                    np.exp(-1*self.beta*t - np.sum((np.power(s, 2) * 1/np.power(self.sigma, 2)), axis=1) / (2*t))
-        # get current time, spatial values and historical time, spatial values.
-        cur_t, his_t = seq_t[-1], seq_t[:-1]
-        cur_s, his_s = seq_s[-1], seq_s[:-1]
-        val = self.mu + np.sum(nu(cur_t-his_t, cur_s-his_s))
+        if len(seq_t) > 0:
+            # get current time, spatial values and historical time, spatial values.
+            cur_t, his_t = seq_t[-1], seq_t[:-1]
+            cur_s, his_s = seq_s[-1], seq_s[:-1]
+            val = self.mu + np.sum(nu(cur_t-his_t, cur_s-his_s))
+        else:
+            val = self.mu
         return val
 
     def upper_bound(self, ):
