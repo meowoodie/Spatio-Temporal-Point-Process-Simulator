@@ -1,26 +1,43 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import abc
+import sys
+import arrow
 import numpy as np
 
 class Lam(object):
     '''An abstract class for defining the intensity of point process'''
     __metaclass__ = abc.ABCMeta
 
-class HawkesLam(Lam):
+class SpatioTemporalHawkesLam(Lam):
     '''Intensity of Spatio-temporal Hawkes point process'''
-    def __init__(self, mu, alpha, beta):
+    def __init__(self, mu, alpha, beta, sigma, maximum=500.):
         self.mu    = mu
         self.alpha = alpha
         self.beta  = beta
+        self.sigma = sigma # same length as the dimension of the S
+        self.maximum = maximum
 
-    def value(self, t, s):
-        '''return the intensity value at (s, t)'''
-        pass
+    def value(self, seq_t, seq_s):
+        '''return the intensity value at (t, s)'''
+        # kernel function (clustering density)
+        # t is a scalar or a vector.
+        def nu(t, s, C=1.):
+            return (C/(2*np.pi*np.prod(self.sigma)*t)) * \
+                   np.exp(-1*self.beta*t - np.sum((np.power(s, 2) * 1/np.power(self.sigma, 2)), axis=1) / (2*t))
+        # get current time, spatial values and historical time, spatial values.
+        cur_t, his_t = seq_t[-1], seq_t[:-1]
+        cur_s, his_s = seq_s[-1], seq_s[:-1]
+        val = self.mu + np.sum(nu(cur_t-his_t, cur_s-his_s))
+        return val
 
-    def upper_bound(self):
+    def upper_bound(self, ):
         '''return the upper bound of the intensity value'''
-        pass
+        return self.maximum
+
+    def __str__(self):
+        return 'Spatio-temporal Hawkes point process intensity'
 
 def homogeneous_poisson_process(lam, T, S):
     '''
@@ -39,7 +56,6 @@ def homogeneous_poisson_process(lam, T, S):
     Returns:
         samples: point process samples [(t1, s1), (t2, s2), ..., (tn, sn)]
     '''
-
     # A helper function for calculating the Lebesgue measure for a space.
     # It actually is the length of an one-dimensional space, and the area of
     # a two-dimensional space.
@@ -74,16 +90,34 @@ def inhomogeneous_poisson_process(lam, T, S):
         b. Generate a sample u from the uniform distribution on (0, 1)
         c. Retain the locations for which u <= p.
     '''
-
     # simulate a homogeneous Poisson process with intensity max_lam
-    homo_samples     = homogeneous_poisson_process(lam.upper_bound(), T, S).tolist()
-    retained_samples = [ point
-        for point in homo_samples
-        if lam.value(point[0], point[1:]) / lam.upper_bound() >= np.random.uniform(0, 1, 1)]
-    return retained_samples
+    points          = homogeneous_poisson_process(lam.upper_bound(), T, S)
+    retained_points = []
+    print('[%s] generate samples %s from homogeneous poisson point process' % \
+          (arrow.now(), points.shape), file=sys.stderr)
+    # thining samples by acceptance rate.
+    for idx in range(len(points)-1):
+        lam_value   = lam.value(points[:idx+2][:, 0], points[:idx+2][:, 1:])
+        lam_maximum = lam.upper_bound()
+        accept_rate = np.random.uniform(0, 1, 1)
+        # if acceptance rate is greater than 1, then raise exceptionself.
+        # and upper bound of intensity should be raised accordingly.
+        assert lam_value / lam_maximum <= 1, \
+               'intensity %f is greater than upper bound %f.' % (lam_value, lam_maximum)
+        if lam_value / lam_maximum >= accept_rate:
+            retained_points.append(points[idx])
+    retained_points = np.array(retained_points)
+    print('[%s] thining samples %s based on %s' % \
+          (arrow.now(), retained_points.shape, lam), file=sys.stderr)
+    return retained_points
 
 if __name__ == '__main__':
-    lam = 1
+    np.random.seed(0)
+    np.set_printoptions(suppress=True)
+
+    # lam = 10
     T   = (0, 10)
     S   = [(0, 1), (0, 1)]
-    print(generate_homogeneous_poisson_process(lam, T, S))
+    # print(generate_homogeneous_poisson_process(lam, T, S))
+    lam = SpatioTemporalHawkesLam(mu=5., alpha=1., beta=1., sigma=[1., 2.])
+    print(inhomogeneous_poisson_process(lam, T, S))
