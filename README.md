@@ -1,18 +1,22 @@
 Spatio-Temporal Point Process Simulator
 ===
 
-Simple Python functions showing how to simulate Spatio-temporal point processes, and marked point processes (there is an example below that shows how to generate and plot a spatio-temporal hawkes point process).
+Simple Python functions showing how to simulate Spatio-temporal point processes, and marked point processes (there is an example below that shows how to generate and plot a spatio-temporal hawkes point process). In general, there are two way to model the spatial-temporal events:
+
+- `STPPG`: The most general way is modeling the spatial-temporal points as a univariate point process where each single point consists of time and location coordinates (or even marks).
+- `MVPPG`: Another way is modeling the spatial-temporal points a multivariate point process, that we could view events occurred in different discrete locations as individual point processes, and use an influential matrix to depict the dependencies between different discrete locations.
 
 ### Usage
 
 > Please see the comments in the source code and unittest for the detailed usage.
 
-- `generator.py` basic generator for homogeneous and inhomogeneous point process, as well as different kinds of intensity class.
+- `stppg.py` basic generators for homogeneous and inhomogeneous univariate point process, as well as different kinds of intensity classes and kernel functions.
+- `mvppg.py` generators for multivariate point process, as well as different kinds of intensity classes and kernel functions.
 - `utils.py` Some simple plotting functions for visualizing the point process simulation.
 
 ### Examples
 
-A simple example for simulating a spatio-temporal hawkes point process.
+A simple example for simulating a spatio-temporal hawkes point process by using `stppg`.
 ```python
 from generator import inhomogeneous_poisson_process, SpatioTemporalHawkesLam
 from utils import plot_spatio_temporal_points, plot_spatial_intensity
