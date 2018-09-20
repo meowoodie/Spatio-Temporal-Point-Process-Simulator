@@ -6,18 +6,40 @@ import sys
 import arrow
 import numpy as np
 
+class Kernel(object):
+    '''An abstract class for defining the kernel function of point process'''
+    __metaclass__ = abc.ABCMeta
+
+class DiffusionKernel(object):
+    '''
+    Kernel function including the diffusion-type model proposed by Musmeci and
+    Vere-Jones (1992).
+    '''
+    def __init__(self, beta=1., C=1., sigma=[1., 1.], offset=[0, 0]):
+        self.beta   = beta
+        self.C      = C
+        self.sigma  = sigma
+        self.offset = np.array(offset)
+
+    def nu(self, t, s):
+        return (self.C/(2*np.pi*np.prod(self.sigma)*t)) * \
+               np.exp(-1*self.beta*t - np.sum((np.power(s - self.offset, 2) / np.power(self.sigma, 2)), axis=1) / (2*t))
+
+    def __str__(self):
+        return 'Diffusion-type Kernel'
+
 class Lam(object):
     '''An abstract class for defining the intensity of point process'''
     __metaclass__ = abc.ABCMeta
 
 class SpatioTemporalHawkesLam(Lam):
     '''Intensity of Spatio-temporal Hawkes point process'''
-    def __init__(self, mu, alpha, beta, sigma, maximum=500.):
+    def __init__(self, mu, alpha, beta, kernel, maximum=500.):
         self.mu    = mu
         self.alpha = alpha
         self.beta  = beta
-        self.sigma = sigma # same length as the dimension of the S
         self.maximum = maximum
+        self.kernel  = kernel
 
     def value(self, seq_t, seq_s):
         '''
@@ -26,16 +48,11 @@ class SpatioTemporalHawkesLam(Lam):
         going to inspect. Prior to that are the past locations which have
         occurred.
         '''
-        # kernel function (clustering density)
-        # t is a scalar or a vector.
-        def nu(t, s, C=1.):
-            return (C/(2*np.pi*np.prod(self.sigma)*t)) * \
-                   np.exp(-1*self.beta*t - np.sum((np.power(s, 2) * 1/np.power(self.sigma, 2)), axis=1) / (2*t))
         if len(seq_t) > 0:
             # get current time, spatial values and historical time, spatial values.
             cur_t, his_t = seq_t[-1], seq_t[:-1]
             cur_s, his_s = seq_s[-1], seq_s[:-1]
-            val = self.mu + self.alpha * np.sum(nu(cur_t-his_t, cur_s-his_s))
+            val = self.mu + self.alpha * np.sum(self.beta * self.kernel.nu(cur_t-his_t, cur_s-his_s))
         else:
             val = self.mu
         return val
@@ -45,8 +62,8 @@ class SpatioTemporalHawkesLam(Lam):
         return self.maximum
 
     def __str__(self):
-        return 'Spatio-temporal Hawkes point process intensity with mu=%1.f, beta=%1.f, sigma=%s' \
-            % (self.mu, self.beta, self.sigma)
+        return 'Spatio-temporal Hawkes point process intensity with mu=%1.f, beta=%1.f and %s.' \
+            % (self.mu, self.beta, self.kernel)
 
 def homogeneous_poisson_process(lam, T, S):
     '''
@@ -109,24 +126,17 @@ def inhomogeneous_poisson_process(lam, T, S):
         lam_value   = lam.value(points[:idx+2][:, 0], points[:idx+2][:, 1:])
         lam_maximum = lam.upper_bound()
         accept_rate = np.random.uniform(0, 1, 1)
-        # if acceptance rate is greater than 1, then raise exceptionself.
+        # if acceptance rate is greater than 1, then raise exception
         # and upper bound of intensity should be raised accordingly.
         assert lam_value / lam_maximum <= 1, \
                'intensity %f is greater than upper bound %f.' % (lam_value, lam_maximum)
         if lam_value / lam_maximum >= accept_rate:
             retained_points.append(points[idx])
+        # show the process of the generation
+        if idx % 1e+3 == 0:
+            print('[%s] %d raw samples have been checked. %d samples have been retained.' % \
+                  (arrow.now(), idx, len(retained_points)), file=sys.stderr)
     retained_points = np.array(retained_points)
     print('[%s] thining samples %s based on %s' % \
           (arrow.now(), retained_points.shape, lam), file=sys.stderr)
     return retained_points
-
-if __name__ == '__main__':
-    # np.random.seed(0)
-    np.set_printoptions(suppress=True)
-
-    # lam = 10
-    T   = (0, 10)
-    S   = [(0, 1), (0, 1)]
-    # print(generate_homogeneous_poisson_process(lam, T, S))
-    lam = SpatioTemporalHawkesLam(mu=1., alpha=1., beta=1., sigma=[1., 1.])
-    print(inhomogeneous_poisson_process(lam, T, S))

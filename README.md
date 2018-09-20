@@ -8,7 +8,7 @@ Simple Python functions showing how to simulate Spatio-temporal point processes,
 > Please see the comments in the source code and unittest for the detailed usage.
 
 - `generator.py` basic generator for homogeneous and inhomogeneous point process, as well as different kinds of intensity class.
-- `utils.py` Some simple plotting functions
+- `utils.py` Some simple plotting functions for visualizing the point process simulation.
 
 ### Examples
 
@@ -23,8 +23,9 @@ np.set_printoptions(suppress=True)
 # define time and spatial space
 T = (0, 1)           # from time 0 to 1
 S = [(0, 1), (0, 1)] # x from 0 to 1, y from 0 to 1
-# define intensity function
-lam    = SpatioTemporalHawkesLam(mu=1., alpha=1., beta=1., sigma=[10., 1.])
+# define kernel function and intensity function
+kernel = DiffusionKernel(beta=1., C=1., sigma=[1., 1.])
+lam    = SpatioTemporalHawkesLam(mu=.1, alpha=.1, beta=2., kernel=kernel, maximum=1e+4)
 # generate points
 points = inhomogeneous_poisson_process(lam, T, S)
 print(points)
@@ -55,6 +56,6 @@ And see the console output below.
  [0.96193638 0.45850317 0.95504668]]
 ```
 
-Here an animation of variation of spatial intensities as time goes by has also been provided, simulated by a Spatio-temporal Hawkes Point process.
+Here an animation of variation of spatial intensities as time goes by, simulated by a Spatio-temporal Hawkes Point process.
 
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/hpp_clips.gif">
