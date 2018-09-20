@@ -8,13 +8,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-def plot_temporal_intensity(points):
-    t = points
-    y = np.zeros((1, len(t)))
-    fig, ax = plt.subplots(figsize=(10,2))
-    ax.scatter(t, y, s=1)
-    plt.show()
-
 def plot_spatial_intensity(lam, points, S, T, t_slots, grid_size, interval):
     '''
     Plot spatial intensity as the time goes by. The generated points can be also

@@ -35,12 +35,12 @@ class SpatioTemporalHawkesLam(Lam):
             # get current time, spatial values and historical time, spatial values.
             cur_t, his_t = seq_t[-1], seq_t[:-1]
             cur_s, his_s = seq_s[-1], seq_s[:-1]
-            val = self.mu + np.sum(nu(cur_t-his_t, cur_s-his_s))
+            val = self.mu + self.alpha * np.sum(nu(cur_t-his_t, cur_s-his_s))
         else:
             val = self.mu
         return val
 
-    def upper_bound(self, ):
+    def upper_bound(self):
         '''return the upper bound of the intensity value'''
         return self.maximum
 
