@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''
+STPPG: Spatio-Temporal Point Process Generator
+'''
+
 import abc
 import sys
 import arrow
