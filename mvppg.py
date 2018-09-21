@@ -9,7 +9,6 @@ import abc
 import sys
 import arrow
 import numpy as np
-from functools import reduce
 from stppg import Kernel, Lam, homogeneous_poisson_process
 
 class ExpKernel(Kernel):
@@ -35,7 +34,7 @@ class MultiVariateLam(Lam):
         self.maximum = maximum
         self.kernel  = kernel
 
-    def value(self, seq_d, seq_t):
+    def value(self, seq_t, seq_d):
         '''
         return the intensity value at (d, t), where t means the time and d means
         the i-th component of the multivariate point process.
@@ -46,6 +45,8 @@ class MultiVariateLam(Lam):
         # get current time, spatial values and historical time, spatial values.
         cur_t, his_t = seq_t[-1], seq_t[:-1]
         cur_d, his_d = seq_d[-1], seq_d[:-1]
+        cur_d = cur_d.astype(np.int32)
+        his_d = his_d.astype(np.int32)
         if len(seq_t) > 1:
             val = self.Mu[cur_d] + np.sum(self.A[cur_d, his_d] * self.kernel.nu(cur_t-his_t))
         else:
@@ -82,18 +83,20 @@ def inhomogeneous_multivariate_poisson_process(lam, D, T=(0, 1)):
     sorted_components = components[points.argsort()]
     # thining samples by acceptance rate.
     for idx in range(len(sorted_points) - 1):
-        lam_value   = lam.value(sorted_components[:idx+1], sorted_points[:idx+1])
+        lam_value   = lam.value(sorted_points[:idx+1], sorted_components[:idx+1])
         lam_maximum = lam.upper_bound()
         accept_rate = np.random.uniform(0, 1, 1)
         # if acceptance rate is greater than 1, then raise exception
         # and upper bound of intensity should be raised accordingly.
-        assert lam_value / lam_maximum <= 1, \
-               'intensity %f is greater than upper bound %f.' % (lam_value, lam_maximum)
+        # assert lam_value / lam_maximum <= 1, \
+        #        'intensity %f is greater than upper bound %f.' % (lam_value, lam_maximum)
+        if lam_value / lam_maximum >= 1:
+            break
         if lam_value / lam_maximum >= accept_rate:
             retained_points.append(sorted_points[idx])
             retained_components.append(sorted_components[idx])
         # show the process of the generation
-        if idx % 1e+3 == 0:
+        if idx % 1e+3 == 0 and idx != 0:
             print('[%s] %d raw samples have been checked. %d samples have been retained.' % \
                   (arrow.now(), idx, len(retained_points)), file=sys.stderr)
     retained_points     = np.array(retained_points)
