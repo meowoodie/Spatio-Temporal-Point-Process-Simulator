@@ -25,9 +25,9 @@ class DiffusionKernel(object):
         self.sigma  = sigma
         self.offset = np.array(offset)
 
-    def nu(self, t, s):
-        return (self.C/(2*np.pi*np.prod(self.sigma)*t)) * \
-               np.exp(-1*self.beta*t - np.sum((np.power(s - self.offset, 2) / np.power(self.sigma, 2)), axis=1) / (2*t))
+    def nu(self, delta_t, delta_s):
+        return (self.C/(2*np.pi*np.prod(self.sigma)*delta_t)) * \
+               np.exp(-1*self.beta*delta_t - np.sum((np.power(delta_s - self.offset, 2) / np.power(self.sigma, 2)), axis=1) / (2*delta_t))
 
     def __str__(self):
         return 'Diffusion-type Kernel'
