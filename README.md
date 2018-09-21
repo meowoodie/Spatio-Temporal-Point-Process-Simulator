@@ -70,4 +70,35 @@ And see the console output below.
 
 Here an animation of variation of spatial intensities as time goes by, simulated by a spatio-temporal Hawkes Point process.
 
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/hpp_clips.gif">
+<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg.gif">
+
+Another example is for simulating a multi-variate point process. Each of the components uniquely indicates a specific discrete region in a 2D space.
+
+```python
+from mvppg import ExpKernel, MultiVariateLam, inhomogeneous_multivariate_poisson_process
+from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_multivariate_intensity, GaussianInfluentialMatrixSimulator, multi2spatial
+
+np.random.seed(0)
+np.set_printoptions(suppress=True)
+
+d      = 20
+cov    = [[.1, 0.], [0., .1]]
+beta   = 1e-5
+D      = d * d
+T      = (0, 1)
+Mu     = np.zeros(D)
+ims = GaussianInfluentialMatrixSimulator(
+    length=1., grid_size=[d, d], mu=[0., 0.], cov=cov)
+A      = ims.A
+kernel = ExpKernel(beta=beta)
+lam    = MultiVariateLam(D, Mu=Mu, A=A, kernel=kernel, maximum=100.)
+ts, ds = inhomogeneous_multivariate_poisson_process(lam, D, T)
+points = multi2spatial(ts, ds, ims)
+# plot intensity of the process over the time
+plot_multivariate_intensity(lam, points, S=[T, (0, 1), (0, 1)],
+    t_slots=1000, grid_size=d, interval=50)
+```
+
+Here an animation of variation of multivariate intensities as time goes by. 
+
+<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/mvppg.gif">
