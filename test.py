@@ -29,10 +29,8 @@ def test_stppg():
 
 def test_mvppg():
     d      = 20
-    # cov    = [[.1, 0.], [0., .1]]
-    # beta   = 1e-5
     cov    = [[.1, 0.], [0., .1]]
-    beta   = 5.
+    beta   = 1e-5
     D      = d * d
     T      = (0, 1)
     Mu     = np.zeros(D)
@@ -43,8 +41,6 @@ def test_mvppg():
     lam    = MultiVariateLam(D, Mu=Mu, A=A, kernel=kernel, maximum=100.)
     ts, ds = inhomogeneous_multivariate_poisson_process(lam, D, T)
     points = multi2spatial(ts, ds, ims)
-    points = points[-100:]
-    print(points)
     # plot intensity of the process over the time
     plot_multivariate_intensity(lam, points, S=[T, (0, 1), (0, 1)],
         t_slots=1000, grid_size=d, interval=50)

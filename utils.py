@@ -149,6 +149,8 @@ def plot_multivariate_intensity(lam, points, S, t_slots, grid_size, interval):
     print(seq_s)
     # define the span for each subspace
     t_span = np.linspace(S[0][0], S[0][1], t_slots+1)[1:]
+    print(S[0][0])
+    print(S[0][1])
     x_span = np.linspace(S[1][0], S[1][1], grid_size+1)[:-1]
     y_span = np.linspace(S[2][0], S[2][1], grid_size+1)[:-1]
     # function for yielding the heatmap over the entire region at a given time
@@ -175,7 +177,7 @@ def plot_multivariate_intensity(lam, points, S, t_slots, grid_size, interval):
     # print(data[500])
     # function for updating the image of each frame
     def animate(i):
-        print(t_span[i])
+        # print(t_span[i])
         im.set_data(data[i])
         return im,
     # function for initiating the first image of the animation
