@@ -52,7 +52,7 @@ class SpatioTemporalHawkesLam(Lam):
         going to inspect. Prior to that are the past locations which have
         occurred.
         '''
-        if len(seq_t) > 0:
+        if len(seq_t) > 1:
             # get current time, spatial values and historical time, spatial values.
             cur_t, his_t = seq_t[-1], seq_t[:-1]
             cur_s, his_s = seq_s[-1], seq_s[:-1]
@@ -123,7 +123,7 @@ def inhomogeneous_poisson_process(lam, S):
           (arrow.now(), points.shape), file=sys.stderr)
     # thining samples by acceptance rate.
     for idx in range(len(points)-1):
-        lam_value   = lam.value(points[:idx+2][:, 0], points[:idx+2][:, 1:])
+        lam_value   = lam.value(points[:idx+1][:, 0], points[:idx+1][:, 1:])
         lam_maximum = lam.upper_bound()
         accept_rate = np.random.uniform(0, 1, 1)
         # if acceptance rate is greater than 1, then raise exception
