@@ -8,18 +8,18 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-def plot_spatial_intensity(lam, points, S, T, t_slots, grid_size, interval):
+def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
     '''
     Plot spatial intensity as the time goes by. The generated points can be also
     plotted on the same 2D space optionally.
     '''
-    assert len(S) == 2, '%d is an invalid dimension of the space.' % len(S)
+    assert len(S) == 3, '%d is an invalid dimension of the space.' % len(S)
     # split points into sequence of time and space.
     seq_t, seq_s = points[:, 0], points[:, 1:]
     # define the span for each subspace
-    t_span = np.linspace(T[0], T[1], t_slots+1)[1:]
-    x_span = np.linspace(S[0][0], S[0][1], grid_size+1)[:-1]
-    y_span = np.linspace(S[1][0], S[1][1], grid_size+1)[:-1]
+    t_span = np.linspace(S[0][0], S[0][1], t_slots+1)[1:]
+    x_span = np.linspace(S[1][0], S[1][1], grid_size+1)[:-1]
+    y_span = np.linspace(S[2][0], S[2][1], grid_size+1)[:-1]
     # function for yielding the heatmap over the entire region at a given time
     def heatmap(t):
         _map      = np.zeros((grid_size, grid_size))

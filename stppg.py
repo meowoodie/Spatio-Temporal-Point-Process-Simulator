@@ -69,22 +69,22 @@ class SpatioTemporalHawkesLam(Lam):
         return 'Spatio-temporal Hawkes point process intensity with mu=%1.f, beta=%1.f and %s.' \
             % (self.mu, self.beta, self.kernel)
 
-def homogeneous_poisson_process(lam, T, S):
+def homogeneous_poisson_process(lam, S):
     '''
-    To generate a homogeneous Poisson point pattern in S ✕ T, this function uses
-    a two step procedure:
-    1. Simulate the number of events n = N(S ✕ T) occurring in S ✕ T according
-       to a Poisson distribution with mean lam * |S| * |T|.
-    2. Sample each of the n location and n times according to a uniform
-       distribution on S and on T respectively.
+    To generate a homogeneous Poisson point pattern in space S, this function
+    uses a two step procedure:
+    1. Simulate the number of events n = N(S) occurring in S according to a
+       Poisson distribution with mean lam * |S|.
+    2. Sample each of the n location according to a uniform distribution on S
+       respectively.
 
     Args:
         lam: intensity (or maximum intensity when used by thining algorithm)
-        T:   (t0, tn) indicates the range of time
-        S:   [(min_x, max_x), (min_y, max_y), ...] indicates the range of
-             coordinates regarding a square (or cubic ...) region.
+        S:   [(min_t, max_t), (min_x, max_x), (min_y, max_y), ...] indicates the
+             range of coordinates regarding a square (or cubic ...) region.
     Returns:
-        samples: point process samples [(t1, s1), (t2, s2), ..., (tn, sn)]
+        samples: point process samples [(t1, x1, y1), (t2, x2, y2), ..., (tn,
+                 xn, yn)]
     '''
     # A helper function for calculating the Lebesgue measure for a space.
     # It actually is the length of an one-dimensional space, and the area of
@@ -93,21 +93,17 @@ def homogeneous_poisson_process(lam, T, S):
         sub_lebesgue_ms = [ sub_space[1] - sub_space[0] for sub_space in S ]
         return np.prod(sub_lebesgue_ms)
 
-    # calculate the number of events in S ✕ T
-    n     = lebesgue_measure(S) * lebesgue_measure([T])
+    # calculate the number of events in S
+    n     = lebesgue_measure(S)
     N     = np.random.poisson(size=1, lam=lam * n)
     # simulate spatial sequence and temporal sequence separately.
-    seq_t = [ np.random.uniform(T[0], T[1], N) ]
-    seq_s = [ np.random.uniform(S[i][0], S[i][1], N) for i in range(len(S)) ]
-    seq_t = np.array(seq_t).transpose()
-    seq_s = np.array(seq_s).transpose()
-    # concatenate spatial sequence and temporal sequence
-    samples = np.concatenate([seq_t, seq_s], axis=1)
+    points = [ np.random.uniform(S[i][0], S[i][1], N) for i in range(len(S)) ]
+    points = np.array(points).transpose()
     # sort the sequence regarding the ascending order of the temporal sample.
-    samples = samples[samples[:, 0].argsort()]
-    return samples
+    points = points[points[:, 0].argsort()]
+    return points
 
-def inhomogeneous_poisson_process(lam, T, S):
+def inhomogeneous_poisson_process(lam, S):
     '''
     To generate a realization of an inhomogeneous Poisson process in S × T, this
     function uses a thining algorithm as follows. For a given intensity function
@@ -121,7 +117,7 @@ def inhomogeneous_poisson_process(lam, T, S):
         c. Retain the locations for which u <= p.
     '''
     # simulate a homogeneous Poisson process with intensity max_lam
-    points          = homogeneous_poisson_process(lam.upper_bound(), T, S)
+    points          = homogeneous_poisson_process(lam.upper_bound(), S)
     retained_points = []
     print('[%s] generate samples %s from homogeneous poisson point process' % \
           (arrow.now(), points.shape), file=sys.stderr)
