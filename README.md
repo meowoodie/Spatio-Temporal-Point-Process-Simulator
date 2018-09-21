@@ -1,10 +1,10 @@
 Spatio-Temporal Point Process Simulator
 ===
 
-Simple Python functions showing how to simulate Spatio-temporal point processes, and marked point processes (there is an example below that shows how to generate and plot a spatio-temporal hawkes point process). In general, there are two way to model the spatial-temporal events:
+Simple Python functions showing how to simulate Spatio-temporal point processes, and marked point processes (there is an example below that shows how to generate and plot a spatio-temporal hawkes point process). In general, there are two ways to model the spatial-temporal events:
 
 - `STPPG`: The most general way is modeling the spatial-temporal points as a univariate point process where each single point consists of time and location coordinates (or even marks).
-- `MVPPG`: Another way is modeling the spatial-temporal points a multivariate point process, that we could view events occurred in different discrete locations as individual point processes, and use an influential matrix to depict the dependencies between different discrete locations.
+- `MVPPG`: Another way is modeling the spatial-temporal points as a multivariate point process that views events occurred in different discrete locations as individual point processes, and uses an influential matrix to depict the dependencies between different discrete locations.
 
 ### Usage
 
@@ -18,48 +18,56 @@ Simple Python functions showing how to simulate Spatio-temporal point processes,
 
 A simple example for simulating a spatio-temporal hawkes point process by using `stppg`.
 ```python
-from generator import inhomogeneous_poisson_process, SpatioTemporalHawkesLam
+from stppg import inhomogeneous_poisson_process, SpatioTemporalHawkesLam, DiffusionKernel
 from utils import plot_spatio_temporal_points, plot_spatial_intensity
 
 np.random.seed(0)
 np.set_printoptions(suppress=True)
 
 # define time and spatial space
-T = (0, 1)           # from time 0 to 1
-S = [(0, 1), (0, 1)] # x from 0 to 1, y from 0 to 1
+S = [(0, 1),         # t from 0 to 1 and
+     (0, 1), (0, 1)] # x from 0 to 1, y from 0 to 1
 # define kernel function and intensity function
 kernel = DiffusionKernel(beta=1., C=1., sigma=[1., 1.])
-lam    = SpatioTemporalHawkesLam(mu=.1, alpha=.1, beta=2., kernel=kernel, maximum=1e+4)
+lam    = SpatioTemporalHawkesLam(mu=.1, alpha=.1, beta=1., kernel=kernel, maximum=1e+4)
 # generate points
-points = inhomogeneous_poisson_process(lam, T, S)
+points = inhomogeneous_poisson_process(lam, S)
 print(points)
 # plot intensity of the process over the time
-plot_spatial_intensity(lam, points, S, T,
+plot_spatial_intensity(lam, points, S,
       t_slots=1000, grid_size=50, interval=50)
 ```
 
 And see the console output below.
 ```bash
-[2018-09-18T17:21:05.016068-04:00] generate samples (503, 3) from homogeneous poisson point process
-[2018-09-18T17:21:05.068921-04:00] thining samples (16, 3) based on Spatio-temporal Hawkes point process intensity with mu=1, beta=1, sigma=[10.0, 1.0]
-[[0.13105523 0.3145733  0.13417364]
- [0.24442559 0.98058013 0.08329098]
- [0.32001715 0.7814796  0.99266699]
- [0.38346389 0.75102165 0.11861552]
- [0.42408899 0.33026704 0.13168728]
- [0.45354268 0.40379274 0.43553154]
- [0.57722859 0.60630813 0.92797617]
- [0.58447607 0.85877747 0.57360975]
- [0.59223042 0.73685316 0.11224999]
- [0.76532525 0.87739879 0.69374702]
- [0.82211773 0.9325612  0.99607127]
- [0.86055117 0.00054596 0.82347172]
- [0.87650525 0.92275661 0.30065116]
- [0.8811032  0.99927799 0.96239507]
- [0.9425836  0.99980858 0.14043952]
- [0.96193638 0.45850317 0.95504668]]
+[2018-09-21T08:28:59.974629-04:00] generate samples (10167, 3) from homogeneous poisson point process
+[2018-09-21T08:28:59.975163-04:00] 0 raw samples have been checked. 0 samples have been retained.
+[2018-09-21T08:29:00.097072-04:00] 1000 raw samples have been checked. 1 samples have been retained.
+[2018-09-21T08:29:00.327207-04:00] 2000 raw samples have been checked. 11 samples have been retained.
+[2018-09-21T08:29:00.643629-04:00] 3000 raw samples have been checked. 21 samples have been retained.
+[2018-09-21T08:29:01.061958-04:00] 4000 raw samples have been checked. 51 samples have been retained.
+[2018-09-21T08:29:01.592077-04:00] 5000 raw samples have been checked. 71 samples have been retained.
+[2018-09-21T08:29:02.242894-04:00] 6000 raw samples have been checked. 88 samples have been retained.
+[2018-09-21T08:29:02.974756-04:00] 7000 raw samples have been checked. 100 samples have been retained.
+[2018-09-21T08:29:03.779483-04:00] 8000 raw samples have been checked. 110 samples have been retained.
+[2018-09-21T08:29:04.741294-04:00] 9000 raw samples have been checked. 128 samples have been retained.
+[2018-09-21T08:29:05.729931-04:00] 10000 raw samples have been checked. 146 samples have been retained.
+[2018-09-21T08:29:05.904117-04:00] thining samples (147, 3) based on Spatio-temporal Hawkes point process intensity with mu=0, beta=1 and Diffusion-type Kernel.
+[[0.06299644 0.9183208  0.97126597]
+ [0.11153312 0.280956   0.05509999]
+ [0.121267   0.36991751 0.65443569]
+ [0.12390124 0.49035887 0.64267112]
+ [0.13272256 0.9463777  0.02484997]
+     ... ...
+ [0.97093684 0.13255896 0.15690197]
+ [0.97663217 0.6115613  0.34787382]
+ [0.97863127 0.21207182 0.19613095]
+ [0.98051828 0.43338621 0.67951877]
+ [0.99105454 0.21976152 0.26218951]]
+[2018-09-21T08:29:05.911032-04:00] preparing the dataset 1000 × (50, 50) for plotting.
+[2018-09-21T08:32:26.300910-04:00] start animation.
 ```
 
-Here an animation of variation of spatial intensities as time goes by, simulated by a Spatio-temporal Hawkes Point process.
+Here an animation of variation of spatial intensities as time goes by, simulated by a spatio-temporal Hawkes Point process.
 
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/hpp_clips.gif">

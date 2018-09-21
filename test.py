@@ -11,7 +11,7 @@ if __name__ == '__main__':
     np.set_printoptions(suppress=True)
 
     # define time and spatial space
-    S   = [(0, 1), (0, 1), (0, 1)]
+    S = [(0, 1), (0, 1), (0, 1)]
 
     # define kernel function and intensity function
     kernel = DiffusionKernel(beta=1., C=1., sigma=[1., 1.])
