@@ -4,7 +4,7 @@ Spatio-Temporal Point Process Simulator
 Simple Python functions showing how to simulate Spatio-temporal point processes, and marked point processes (there is an example below that shows how to generate and plot a spatio-temporal hawkes point process). In general, there are two ways to model the spatial-temporal events:
 
 - `STPPG`: The most general way is modeling the spatial-temporal points as a univariate point process where each single point consists of time and location coordinates (or even marks).
-- `MVPPG`: Another way is modeling the spatial-temporal points as a multivariate point process that views events occurred in different discrete locations as individual point processes, and uses an influential matrix to depict the dependencies between different discrete locations.
+- `MVPPG`: Another way is modeling the spatial-temporal points as a multivariate point process that views events occurred in different discrete locations as individual point processes (simulates the locations by using different components of the point process), and uses an influential matrix to depict the dependencies between different discrete locations.
 
 ### Usage
 
