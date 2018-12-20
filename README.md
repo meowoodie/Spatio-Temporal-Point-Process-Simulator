@@ -71,9 +71,8 @@ And see the console output below.
 Here an animation of variation of spatial intensities as time goes by, simulated by a spatio-temporal Hawkes Point process.
 
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg.gif">
-> Diffusion Kernel (sigma = [1, 1])
 
-
+> Diffusion Kernel (`sigma = [1, 1]`)
 
 Another example is for simulating a multi-variate point process. Each of the components uniquely indicates a specific discrete region in a 2D space.
 
