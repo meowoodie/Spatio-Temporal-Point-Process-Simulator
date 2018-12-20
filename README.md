@@ -71,6 +71,9 @@ And see the console output below.
 Here an animation of variation of spatial intensities as time goes by, simulated by a spatio-temporal Hawkes Point process.
 
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg.gif">
+> Diffusion Kernel (sigma = [1, 1])
+
+
 
 Another example is for simulating a multi-variate point process. Each of the components uniquely indicates a specific discrete region in a 2D space.
 
@@ -99,6 +102,11 @@ plot_multivariate_intensity(lam, points, S=[T, (0, 1), (0, 1)],
     t_slots=1000, grid_size=d, interval=50)
 ```
 
-Here an animation of variation of multivariate intensities as time goes by. 
+Here an animation of variation of multivariate intensities as time goes by.
 
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/mvppg.gif">
+
+### References
+
+- [F. MUSMECI, D. VERE-JONES. "A Space-Time Clustering Model for Historical Earthquakes"](https://link.springer.com/content/pdf/10.1007%2FBF00048666.pdf)
+- [Preprint: Crime Linkage Detection by Spatial-Temporal Text Point Processes.](https://meowoodie.github.io/publication.html)
