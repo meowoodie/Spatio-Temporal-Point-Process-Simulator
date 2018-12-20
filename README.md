@@ -107,5 +107,5 @@ Here an animation of variation of multivariate intensities as time goes by.
 
 ### References
 
-- [F. MUSMECI, D. VERE-JONES. "A Space-Time Clustering Model for Historical Earthquakes"](https://link.springer.com/content/pdf/10.1007%2FBF00048666.pdf)
+- [F. Musmeci, D. Vere-Jones. "A Space-Time Clustering Model for Historical Earthquakes"](https://link.springer.com/content/pdf/10.1007%2FBF00048666.pdf)
 - [Preprint: Crime Linkage Detection by Spatial-Temporal Text Point Processes.](https://meowoodie.github.io/publication.html)
