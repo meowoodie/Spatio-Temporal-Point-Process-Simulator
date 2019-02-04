@@ -68,9 +68,10 @@ And see the console output below.
 [2018-09-21T08:32:26.300910-04:00] start animation.
 ```
 
-Here an animation of variation of spatial intensities as time goes by, simulated by a spatio-temporal Hawkes Point process.
+Here are animations of variation of spatial intensities as time goes by, simulated by two spatio-temporal Hawkes Point process.
 
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg.gif">
+<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg1.gif">
+<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg2.gif">
 
 > Diffusion Kernel (`sigma = [1, 1]`)
 
@@ -108,4 +109,4 @@ Here an animation of variation of multivariate intensities as time goes by.
 ### References
 
 - [F. Musmeci, D. Vere-Jones. "A Space-Time Clustering Model for Historical Earthquakes"](https://link.springer.com/content/pdf/10.1007%2FBF00048666.pdf)
-- [Preprint: Crime Linkage Detection by Spatial-Temporal Text Point Processes.](https://meowoodie.github.io/publication.html)
+- [S. Zhu and Y. Xie. "Crime Linkage Detection by Spatial-Temporal Text Point Processes"](https://arxiv.org/abs/1902.00440)
