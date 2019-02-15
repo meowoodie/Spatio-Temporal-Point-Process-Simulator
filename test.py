@@ -10,21 +10,19 @@ from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_mult
 
 def test_stppg():
     '''Test Spatio-Temporal Point Process Generator'''
-    # define time and spatial space
-    S = [(0, 1), (0, 1), (0, 1)]
+    mu     = 1.
+    kernel = DiffusionKernel()
+    lam    = HawkesLam(mu, kernel, maximum=1e+6)
+    pp     = MarkedSpatialTemporalPointProcess(lam)
 
-    # define kernel function and intensity function
-    kernel = DiffusionKernel(beta=1., C=1., sigma=[1., 1.])
-    lam    = SpatioTemporalHawkesLam(mu=.1, alpha=.1, beta=1., kernel=kernel, maximum=1e+4)
-    points = inhomogeneous_poisson_process(lam, S)
-    print(points)
+    points = pp.generate(T=[0., 1.], S=[[-1., 1.], [-1., 1.]], batch_size=3)
 
     # read or save to local txt file.
     # points = np.loadtxt('hpp_sept_20.txt', delimiter=',')
     # np.savetxt('hpp_sept_20.txt', points, delimiter=',')
 
     # plot intensity of the process over the time
-    plot_spatial_intensity(lam, points, S,
+    plot_spatial_intensity(lam, points[0, :, :], S,
         t_slots=1000, grid_size=50, interval=50)
 
 def test_mvppg():
@@ -50,4 +48,23 @@ if __name__ == '__main__':
     np.set_printoptions(suppress=True)
 
     # test_stppg()
-    test_mvppg()
+    # test_mvppg()
+
+    points = np.array([
+        [ 0.36997303, -0.05792566,  0.68023894],
+        [ 0.39260438,  0.97531302, -0.96479512],
+        [ 0.53247704,  0.1610365,   0.79696197],
+        [ 0.62975171,  0.42994964,  0.72846005],
+        [ 0.64687623, -0.07139027,  0.87994606],
+        [ 0.79895546, -0.036986,   -0.84665047],
+        [ 0.85706017, -0.7623167,   0.02126256],
+        [ 0.93949473, -0.72242577,  0.1817626 ],
+        [ 0.97328026, -0.88536129,  0.91589099]
+    ])
+    S = [(0, 1.), (-1., 1.), (-1., 1.)]
+
+    kernel = DiffusionKernel(beta=1., C=1., sigma=[1., 1.])
+    lam    = SpatioTemporalHawkesLam(mu=1., alpha=1., beta=1., kernel=kernel, maximum=1e+6)
+
+    plot_spatial_intensity(lam, points, S,
+        t_slots=1000, grid_size=50, interval=50)
