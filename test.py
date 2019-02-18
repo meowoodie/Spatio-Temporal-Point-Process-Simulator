@@ -4,7 +4,7 @@
 import numpy as np
 
 import matplotlib.pyplot as plt
-from stppg import DiffusionKernel, HawkesLam, MarkedSpatialTemporalPointProcess
+from stppg import DiffusionKernel, HawkesLam, SpatialTemporalPointProcess
 from mvppg import ExpKernel, MultiVariateLam, inhomogeneous_multivariate_poisson_process
 from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_multivariate_intensity, GaussianInfluentialMatrixSimulator, multi2spatial
 
@@ -12,8 +12,8 @@ def test_stppg():
     '''Test Spatio-Temporal Point Process Generator'''
     mu     = 1.
     kernel = DiffusionKernel()
-    lam    = HawkesLam(mu, kernel, maximum=1e+5)
-    pp     = MarkedSpatialTemporalPointProcess(lam)
+    lam    = HawkesLam(mu, kernel, maximum=5e+4)
+    pp     = SpatialTemporalPointProcess(lam)
 
     points = pp.generate(T=[0., 10.], S=[[-1., 1.], [-1., 1.]], batch_size=100)
 

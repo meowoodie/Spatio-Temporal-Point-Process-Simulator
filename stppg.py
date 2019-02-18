@@ -69,11 +69,11 @@ class HawkesLam(object):
     def __str__(self):
         return "Hawkes processes"
 
-class MarkedSpatialTemporalPointProcess(object):
+class SpatialTemporalPointProcess(object):
     """
     Marked Spatial Temporal Hawkes Process
 
-    A stochastic marked spatial temporal points generator based on Hawkes process.
+    A stochastic spatial temporal points generator based on Hawkes process.
     """
 
     def __init__(self, lam):
@@ -187,10 +187,8 @@ if __name__ == "__main__":
     mu     = 1.
     kernel = DiffusionKernel()
     lam    = HawkesLam(mu, kernel, maximum=1e+6)
-    pp     = MarkedSpatialTemporalPointProcess(lam)
+    pp     = SpatialTemporalPointProcess(lam)
 
     data = pp.generate(T=[0., 1.], S=[[-1., 1.], [-1., 1.]], batch_size=3)
     print(data)
     print(data.shape)
-
-    
