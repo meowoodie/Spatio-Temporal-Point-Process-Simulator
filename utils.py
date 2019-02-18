@@ -55,7 +55,7 @@ def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
     im  = plt.imshow(data[-1], cmap='hot', animated=True) # set last image initially for automatically setting color range.
     # function for updating the image of each frame
     def animate(i):
-        print(t_span[i])
+        # print(t_span[i])
         im.set_data(data[i])
         return im,
     # function for initiating the first image of the animation

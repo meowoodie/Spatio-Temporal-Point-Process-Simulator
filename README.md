@@ -24,19 +24,19 @@ from utils import plot_spatio_temporal_points, plot_spatial_intensity
 np.random.seed(0)
 np.set_printoptions(suppress=True)
 
-mu     = 1.
-kernel = DiffusionKernel()
-lam    = HawkesLam(mu, kernel, maximum=1e+5)
-pp     = MarkedSpatialTemporalPointProcess(lam)
+mu     = .1
+kernel = DiffusionKernel(beta=1., C=1., sigma_x = .1, sigma_y = .1)
+lam    = HawkesLam(mu, kernel, maximum=1e+3)
+pp     = SpatialTemporalPointProcess(lam)
 
-points = pp.generate(T=[0., 10.], S=[[-1., 1.], [-1., 1.]], batch_size=100)
+points = pp.generate(T=[0., 10.], S=[[-1., 1.], [-1., 1.]], batch_size=1)
+# print(points.shape)
 
 # read or save to local npy file.
-# points = np.load('hpp_Feb_17.npy')
-np.save('hpp_Feb_17.npy', points)
+np.save('hpp_Feb_18.npy', points)
 
-# plot intensity of the process over the time
-plot_spatial_intensity(lam, points[0, :, :], S=[[0., 1.], [-1., 1.], [-1., 1.]],
+# # plot intensity of the process over the time
+plot_spatial_intensity(lam, points[0, :, :], S=[[0., 10.], [-1., 1.], [-1., 1.]],
     t_slots=1000, grid_size=50, interval=50)
 ```
 
@@ -72,8 +72,7 @@ And see the console output below.
 
 Here are animations of variation of spatial intensities as time goes by, simulated by two spatio-temporal Hawkes Point process.
 
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg1.gif">
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg2.gif">
+<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg3.gif">
 
 > Diffusion Kernel (`sigma = [1, 1]`)
 
