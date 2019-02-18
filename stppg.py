@@ -150,7 +150,7 @@ class MarkedSpatialTemporalPointProcess(object):
                 # retained_points.append(homo_points[i])
                 retained_points = np.concatenate([retained_points, homo_points[[i], :]], axis=0)
             # monitor the process of the generation
-            if i != 0 and i % (homo_points.shape[0] / 10) == 0:
+            if i != 0 and i % int(homo_points.shape[0] / 10) == 0:
                 print("[%s] %d raw samples have been checked. %d samples have been retained." % \
                     (arrow.now(), i, retained_points.shape[0]), file=sys.stderr)
         # log the final results of the thinning algorithm

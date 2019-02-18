@@ -15,7 +15,7 @@ def test_stppg():
     lam    = HawkesLam(mu, kernel, maximum=1e+5)
     pp     = MarkedSpatialTemporalPointProcess(lam)
 
-    points = pp.generate(T=[0., 10.], S=[[-1., 1.], [-1., 1.]], batch_size=500)
+    points = pp.generate(T=[0., 10.], S=[[-1., 1.], [-1., 1.]], batch_size=100)
 
     # read or save to local npy file.
     # points = np.load('hpp_Feb_17.npy')
