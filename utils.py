@@ -10,6 +10,15 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from scipy.stats import multivariate_normal
 
+def lebesgue_measure(S):
+    """
+    A helper function for calculating the Lebesgue measure for a space.
+    It actually is the length of an one-dimensional space, and the area of
+    a two-dimensional space.
+    """
+    sub_lebesgue_ms = [ sub_space[1] - sub_space[0] for sub_space in S ]
+    return np.prod(sub_lebesgue_ms)
+
 def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
     '''
     Plot spatial intensity as the time goes by. The generated points can be also
@@ -29,9 +38,12 @@ def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
         sub_seq_s = seq_s[:len(sub_seq_t)]
         for x_idx in range(grid_size):
             for y_idx in range(grid_size):
-                _seq_t = np.array(sub_seq_t.tolist() + [t])
-                _seq_s = np.array(sub_seq_s.tolist() + [[x_span[x_idx], y_span[y_idx]]])
-                _map[x_idx][y_idx] = lam.value(_seq_t, _seq_s)
+                s = [x_span[x_idx], y_span[y_idx]]
+                # _seq_t = np.array(sub_seq_t.tolist() + [t])
+                # _seq_s = np.array(sub_seq_s.tolist() + [[x_span[x_idx], y_span[y_idx]]])
+                _map[x_idx][y_idx] = lam.value(
+                    t, sub_seq_t, 
+                    s, sub_seq_s)
         return _map
     # prepare the heatmap data in advance
     print('[%s] preparing the dataset %d × (%d, %d) for plotting.' %

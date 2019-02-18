@@ -150,12 +150,12 @@ class MarkedSpatialTemporalPointProcess(object):
                 # retained_points.append(homo_points[i])
                 retained_points = np.concatenate([retained_points, homo_points[[i], :]], axis=0)
             # monitor the process of the generation
-            if i % (self.lam.upper_bound() / 10.) == 0 and i != 0:
+            if i != 0 and i % (homo_points.shape[0] / 10) == 0:
                 print("[%s] %d raw samples have been checked. %d samples have been retained." % \
                     (arrow.now(), i, retained_points.shape[0]), file=sys.stderr)
         # log the final results of the thinning algorithm
         print("[%s] thining samples %s based on %s." % \
-            (arrow.now(), retained_points.shape, lam), file=sys.stderr)
+            (arrow.now(), retained_points.shape, self.lam), file=sys.stderr)
         return retained_points
 
     def generate(self, T=[0, 1], S=[[0, 1], [0, 1]], batch_size=10):
@@ -167,6 +167,7 @@ class MarkedSpatialTemporalPointProcess(object):
         b           = 0
         # generate inhomogeneous poisson points iterately
         while b < batch_size:
+            print("[%s] generating %d-th sequence." % (arrow.now(), b), file=sys.stderr)
             homo_points = self._homogeneous_poisson_sampling(T, S)
             points      = self._inhomogeneous_poisson_thinning(homo_points)
             if points is None:

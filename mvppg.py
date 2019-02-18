@@ -9,9 +9,9 @@ import abc
 import sys
 import arrow
 import numpy as np
-from stppg import Kernel, Lam, homogeneous_poisson_process
+# from stppg import homogeneous_poisson_process
 
-class ExpKernel(Kernel):
+class ExpKernel(object):
     '''
     Exponential Kernel function
     beta * exp(-beta * (t - t_i))
@@ -25,7 +25,7 @@ class ExpKernel(Kernel):
     def __str__(self):
         return 'Exponential Kernel'
 
-class MultiVariateLam(Lam):
+class MultiVariateLam(object):
     '''Intensity of Multivariate Point Process'''
     def __init__(self, D, Mu, A, kernel, maximum=500.):
         self.D     = D
