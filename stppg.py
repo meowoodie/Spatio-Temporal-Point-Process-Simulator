@@ -7,6 +7,7 @@ STPPG: Spatio-Temporal Point Process Generator
 References:
 - https://www.jstatsoft.org/article/view/v053i02
 - https://www.ism.ac.jp/editsec/aism/pdf/044_1_0001.pdf
+- https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator
 
 Dependencies:
 - Python 3.6.7
@@ -111,7 +112,7 @@ class SpatialTemporalPointProcess(object):
         points = points[points[:, 0].argsort()]
         return points
 
-    def _inhomogeneous_poisson_thinning(self, homo_points):
+    def _inhomogeneous_poisson_thinning(self, homo_points, verbose):
         """
         To generate a realization of an inhomogeneous Poisson process in S × T, this
         function uses a thining algorithm as follows. For a given intensity function
@@ -125,8 +126,9 @@ class SpatialTemporalPointProcess(object):
             c. Retain the locations for which u <= p.
         """
         retained_points = np.empty((0, homo_points.shape[1]))
-        print("[%s] generate %s samples from homogeneous poisson point process" % \
-            (arrow.now(), homo_points.shape), file=sys.stderr)
+        if verbose:
+            print("[%s] generate %s samples from homogeneous poisson point process" % \
+                (arrow.now(), homo_points.shape), file=sys.stderr)
         # thining samples by acceptance rate.
         for i in range(homo_points.shape[0]):
             # current time, location and generated historical times and locations.
@@ -141,43 +143,46 @@ class SpatialTemporalPointProcess(object):
             # - if lam_value is greater than lam_bar, then skip the generation process
             #   and return None.
             if lam_value > lam_bar:
-                print("intensity %f is greater than upper bound %f." % (lam_value, lam_bar), file=sys.stderr)
+                # print("intensity %f is greater than upper bound %f." % (lam_value, lam_bar), file=sys.stderr)
                 return None
             # accept
             if lam_value >= D * lam_bar:
                 # retained_points.append(homo_points[i])
                 retained_points = np.concatenate([retained_points, homo_points[[i], :]], axis=0)
             # monitor the process of the generation
-            if i != 0 and i % int(homo_points.shape[0] / 10) == 0:
+            if verbose and i != 0 and i % int(homo_points.shape[0] / 10) == 0:
                 print("[%s] %d raw samples have been checked. %d samples have been retained." % \
                     (arrow.now(), i, retained_points.shape[0]), file=sys.stderr)
         # log the final results of the thinning algorithm
-        print("[%s] thining samples %s based on %s." % \
-            (arrow.now(), retained_points.shape, self.lam), file=sys.stderr)
+        if verbose:
+            print("[%s] thining samples %s based on %s." % \
+                (arrow.now(), retained_points.shape, self.lam), file=sys.stderr)
         return retained_points
 
-    def generate(self, T=[0, 1], S=[[0, 1], [0, 1]], batch_size=10):
+    def generate(self, T=[0, 1], S=[[0, 1], [0, 1]], batch_size=10, upper_len=10, verbose=True):
         """
         generate spatio-temporal points given lambda and kernel function
         """
         points_list = []
+        sizes       = []
         max_len     = 0
         b           = 0
         # generate inhomogeneous poisson points iterately
         while b < batch_size:
-            print("[%s] generating %d-th sequence." % (arrow.now(), b), file=sys.stderr)
             homo_points = self._homogeneous_poisson_sampling(T, S)
-            points      = self._inhomogeneous_poisson_thinning(homo_points)
-            if points is None:
+            points      = self._inhomogeneous_poisson_thinning(homo_points, verbose)
+            if points is None or len(points) == 0 or len(points) > upper_len:
                 continue
             max_len = points.shape[0] if max_len < points.shape[0] else max_len
             points_list.append(points)
+            sizes.append(len(points))
+            print("[%s] %d-th sequence is generated." % (arrow.now(), b+1), file=sys.stderr)
             b += 1
         # fit the data into a tensor
         data = np.zeros((batch_size, max_len, 3))
         for b in range(batch_size):
             data[b, :points_list[b].shape[0]] = points_list[b]
-        return data
+        return data, sizes
 
 
 
