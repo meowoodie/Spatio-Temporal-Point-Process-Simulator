@@ -1,18 +1,19 @@
-Spatio-Temporal Point Process Simulator
+Marked Spatio-Temporal Point Process Simulator
 ===
 
-Simple Python functions showing how to simulate Spatio-temporal point processes, and marked point processes (there is an example below that shows how to generate and plot a spatio-temporal hawkes point process). In general, there are two ways to model the spatial-temporal events:
-
-- `STPPG`: The most general way is modeling the spatial-temporal points as a univariate point process where each single point consists of time and location coordinates (or even marks).
-- `MVPPG`: Another way is modeling the spatial-temporal points as a multivariate point process that views events occurred in different discrete locations as individual point processes (simulates the locations by using different components of the point process), and uses an influential matrix to depict the dependencies between different discrete locations.
+A set of Python tools called `STPPG` for simulating Marked Spatio-temporal point processes. 
 
 ### Usage
 
-> Please see the comments in the source code and unittest for the detailed usage.
+There are two vital files included in this repo: 
 
 - `stppg.py` basic generators for homogeneous and inhomogeneous univariate point process, as well as different kinds of intensity classes and kernel functions.
-- `mvppg.py` generators for multivariate point process, as well as different kinds of intensity classes and kernel functions.
 - `utils.py` Some simple plotting functions for visualizing the point process simulation.
+
+For simulating any parametric point process defined in references, we need to define the `parametric form` of its conditional density  and `generating space` (time, location, and marks). 
+
+- To define the form of the conditional density of a point process, a `Lam` object defined in `stppg.py` has to be substantiated with corresponding parameters. The most important parameters of a conditional intensity `Lam` is defined in its kernel function. See the example below.
+- Regard the space of the point process, time space is specified by 1D two-elements list `T`, and location & mark space is jointly specified by 2D list `S`, where first two sub-lists indicate the location X and Y, and the following sub-lists indicate the mark space.  
 
 ### Examples
 
@@ -76,38 +77,8 @@ Here are animations of variation of spatial intensities as time goes by, simulat
 
 > Diffusion Kernel (`sigma = [.1, .1]`)
 
-Another example is for simulating a multi-variate point process. Each of the components uniquely indicates a specific discrete region in a 2D space.
-
-```python
-from mvppg import ExpKernel, MultiVariateLam, inhomogeneous_multivariate_poisson_process
-from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_multivariate_intensity, GaussianInfluentialMatrixSimulator, multi2spatial
-
-np.random.seed(0)
-np.set_printoptions(suppress=True)
-
-d      = 20
-cov    = [[.1, 0.], [0., .1]]
-beta   = 1e-5
-D      = d * d
-T      = (0, 1)
-Mu     = np.zeros(D)
-ims = GaussianInfluentialMatrixSimulator(
-    length=1., grid_size=[d, d], mu=[0., 0.], cov=cov)
-A      = ims.A
-kernel = ExpKernel(beta=beta)
-lam    = MultiVariateLam(D, Mu=Mu, A=A, kernel=kernel, maximum=100.)
-ts, ds = inhomogeneous_multivariate_poisson_process(lam, D, T)
-points = multi2spatial(ts, ds, ims)
-# plot intensity of the process over the time
-plot_multivariate_intensity(lam, points, S=[T, (0, 1), (0, 1)],
-    t_slots=1000, grid_size=d, interval=50)
-```
-
-Here an animation of variation of multivariate intensities as time goes by.
-
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/mvppg.gif">
-
 ### References
 
+- [Y. Ogata. "Space-Time Point-Process Models for Earthquake Occurrences"](https://link.springer.com/article/10.1023/A:1003403601725)
 - [F. Musmeci, D. Vere-Jones. "A Space-Time Clustering Model for Historical Earthquakes"](https://link.springer.com/content/pdf/10.1007%2FBF00048666.pdf)
 - [S. Zhu and Y. Xie. "Crime Linkage Detection by Spatio-Temporal Text Point Processes"](https://arxiv.org/abs/1902.00440)

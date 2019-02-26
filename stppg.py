@@ -36,13 +36,7 @@ class DiffusionKernel(object):
             np.exp((- 1. / (2 * delta_t)) * \
                 ((np.square(delta_x) / np.square(self.sigma_x)) + \
                 (np.square(delta_y) / np.square(self.sigma_y))))
-        # return np.exp(- self.beta * delta_t) * \
-        #     (1. / (2 * np.pi * np.sqrt(self.sigma_x_2) * np.sqrt(self.sigma_y_2) * delta_t)) * \
-        #     np.exp((- 1. / (2 * delta_t)) * \
-        #         ((np.square(delta_x) / self.sigma_x_2) + \
-        #         (np.square(delta_y) / self.sigma_y_2) - \
-        #         (2. * np.sqrt(1 - np.square(delta_t)) * (delta_x - delta_y) / (np.sqrt(self.sigma_x_2) * np.sqrt(self.sigma_y_2))))) 
-
+                
 class HawkesLam(object):
     """Intensity of Spatio-temporal Hawkes point process"""
     def __init__(self, mu, kernel, maximum=1e+4):
@@ -159,7 +153,7 @@ class SpatialTemporalPointProcess(object):
                 (arrow.now(), retained_points.shape, self.lam), file=sys.stderr)
         return retained_points
 
-    def generate(self, T=[0, 1], S=[[0, 1], [0, 1]], batch_size=10, upper_len=10, verbose=True):
+    def generate(self, T=[0, 1], S=[[0, 1], [0, 1]], batch_size=10, verbose=True):
         """
         generate spatio-temporal points given lambda and kernel function
         """
@@ -171,7 +165,7 @@ class SpatialTemporalPointProcess(object):
         while b < batch_size:
             homo_points = self._homogeneous_poisson_sampling(T, S)
             points      = self._inhomogeneous_poisson_thinning(homo_points, verbose)
-            if points is None or len(points) == 0 or len(points) > upper_len:
+            if points is None or len(points) == 0:
                 continue
             max_len = points.shape[0] if max_len < points.shape[0] else max_len
             points_list.append(points)
