@@ -30,14 +30,16 @@ kernel = DiffusionKernel(beta=1., C=1., sigma_x = .1, sigma_y = .1)
 lam    = HawkesLam(mu, kernel, maximum=1e+3)
 pp     = SpatialTemporalPointProcess(lam)
 
-points = pp.generate(T=[0., 10.], S=[[-1., 1.], [-1., 1.]], batch_size=1)
-# print(points.shape)
+points, sizes = pp.generate(
+    T=[0., 10.], S=[[-1., 1.], [-1., 1.]], 
+    batch_size=10, verbose=True)
 
 # read or save to local npy file.
-np.save('hpp_Feb_18.npy', points)
+# points = np.load('results/tf_thining_samples.npy')
+np.save('results/hpp_Feb_28.npy', points)
 
 # # plot intensity of the process over the time
-plot_spatial_intensity(lam, points[0, :, :], S=[[0., 10.], [-1., 1.], [-1., 1.]],
+plot_spatial_intensity(lam, points[0], S=[[0., 10.], [-1., 1.], [-1., 1.]],
     t_slots=1000, grid_size=50, interval=50)
 ```
 

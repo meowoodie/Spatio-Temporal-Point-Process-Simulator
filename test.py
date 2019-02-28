@@ -15,16 +15,17 @@ def test_stppg():
     lam    = HawkesLam(mu, kernel, maximum=1e+3)
     pp     = SpatialTemporalPointProcess(lam)
 
-    points, sizes = pp.generate(T=[0., 10.], S=[[-1., 1.], [-1., 1.]], 
-                         batch_size=100, upper_len=10, verbose=False)
+    points, sizes = pp.generate(
+        T=[0., 10.], S=[[-1., 1.], [-1., 1.]], 
+        batch_size=10, verbose=True)
     print(sizes)
 
     # read or save to local npy file.
-    # points = np.load('hpp_Feb_18.npy')
+    # points = np.load('results/tf_thining_samples.npy')
     np.save('results/hpp_Feb_25.npy', points)
 
     # # plot intensity of the process over the time
-    plot_spatial_intensity(lam, points[0, :, :], S=[[0., 10.], [-1., 1.], [-1., 1.]],
+    plot_spatial_intensity(lam, points[0], S=[[0., 10.], [-1., 1.], [-1., 1.]],
         t_slots=1000, grid_size=50, interval=50)
 
 # def test_mvppg():

@@ -137,7 +137,7 @@ class SpatialTemporalPointProcess(object):
             # - if lam_value is greater than lam_bar, then skip the generation process
             #   and return None.
             if lam_value > lam_bar:
-                # print("intensity %f is greater than upper bound %f." % (lam_value, lam_bar), file=sys.stderr)
+                print("intensity %f is greater than upper bound %f." % (lam_value, lam_bar), file=sys.stderr)
                 return None
             # accept
             if lam_value >= D * lam_bar:
