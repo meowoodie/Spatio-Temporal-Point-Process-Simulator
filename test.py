@@ -11,13 +11,13 @@ from utils import plot_spatio_temporal_points, plot_spatial_intensity # , plot_m
 def test_stppg():
     '''Test Spatio-Temporal Point Process Generator'''
     mu     = .1
-    kernel = DiffusionKernel(beta=1., C=1., sigma_x = .1, sigma_y = .1)
+    kernel = DiffusionKernel(beta=1., C=1., sigma_x=.1, sigma_y=.1)
     lam    = HawkesLam(mu, kernel, maximum=1e+3)
     pp     = SpatialTemporalPointProcess(lam)
 
     points, sizes = pp.generate(
         T=[0., 10.], S=[[-1., 1.], [-1., 1.]], 
-        batch_size=10, verbose=True)
+        batch_size=150, verbose=True)
     print(sizes)
 
     # read or save to local npy file.
