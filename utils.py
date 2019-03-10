@@ -7,7 +7,10 @@ import arrow
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 from matplotlib import animation
+from matplotlib.backends.backend_pdf import PdfPages
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.stats import multivariate_normal
 
 def lebesgue_measure(S):
@@ -19,11 +22,82 @@ def lebesgue_measure(S):
     sub_lebesgue_ms = [ sub_space[1] - sub_space[0] for sub_space in S ]
     return np.prod(sub_lebesgue_ms)
 
+def plot_spatial_kernel(path, kernel, S, grid_size):
+    """
+    Plot spatial kernel parameters over the spatial region, including 
+    sigma_x, sigma_x, and rho. 
+    """
+    assert len(S) == 2, '%d is an invalid dimension of the space.' % len(S)
+    # define the span for space region
+    x_span = np.linspace(S[0][0], S[0][1], grid_size+1)[:-1]
+    y_span = np.linspace(S[1][0], S[1][1], grid_size+1)[:-1]
+    # map initialization
+    sigma_x_map = np.zeros((grid_size, grid_size))
+    sigma_y_map = np.zeros((grid_size, grid_size))
+    rho_map     = np.zeros((grid_size, grid_size))
+    # grid entris calculation
+    for x_idx in range(grid_size):
+        for y_idx in range(grid_size):
+            s                         = [x_span[x_idx], y_span[y_idx]]
+            sigma_x, sigma_y, rho     = kernel.nonlinear_mapping(s)
+            sigma_x_map[x_idx][y_idx] = sigma_x
+            sigma_y_map[x_idx][y_idx] = sigma_y
+            rho_map[x_idx][y_idx]     = rho
+    # plotting
+    plt.rc('text', usetex=True)
+    plt.rc("font", family="serif")
+    # plot as a pdf file
+    with PdfPages(path) as pdf:
+        fig, axs = plt.subplots(1, 3)
+        cmap     = matplotlib.cm.get_cmap('viridis')
+        im_0     = axs[0].imshow(sigma_x_map, interpolation='nearest', origin='lower', cmap=cmap)
+        im_1     = axs[1].imshow(sigma_y_map, interpolation='nearest', origin='lower', cmap=cmap)
+        im_2     = axs[2].imshow(rho_map, interpolation='nearest', origin='lower', cmap=cmap)
+        # print(sigma_x_map.min(), sigma_x_map.max())
+        # print(sigma_y_map.min(), sigma_y_map.max())
+        # print(rho_map.min(), rho_map.max())
+        # # ticks for colorbars
+        im_0.set_clim(.1, .124)
+        im_1.set_clim(.1, .25)
+        im_2.set_clim(-0.6, 0.9)
+        tick_0 = np.linspace(.1, .124, 5).tolist()
+        tick_1 = np.linspace(.1, .3, 5).tolist()
+        tick_2 = np.linspace(-.6, .9, 5).tolist()
+        # set x, y labels for subplots
+        axs[0].set_xlabel(r'$x$')
+        axs[1].set_xlabel(r'$x$')
+        axs[2].set_xlabel(r'$x$')
+        axs[0].set_ylabel(r'$y$')
+        axs[1].set_ylabel(r'$y$')
+        axs[2].set_ylabel(r'$y$')
+        # remove x, y ticks
+        axs[0].get_xaxis().set_ticks([])
+        axs[1].get_xaxis().set_ticks([])
+        axs[2].get_xaxis().set_ticks([])
+        axs[0].get_yaxis().set_ticks([])
+        axs[1].get_yaxis().set_ticks([])
+        axs[2].get_yaxis().set_ticks([])
+        # set subtitle for subplots
+        axs[0].set_title(r'$\sigma_x$')
+        axs[1].set_title(r'$\sigma_y$')
+        axs[2].set_title(r'$\rho$')
+        # plot colorbar
+        cbar_0 = fig.colorbar(im_0, ax=axs[0], ticks=tick_0, fraction=0.046, pad=0.08, orientation="horizontal")
+        cbar_1 = fig.colorbar(im_1, ax=axs[1], ticks=tick_1, fraction=0.046, pad=0.08, orientation="horizontal")
+        cbar_2 = fig.colorbar(im_2, ax=axs[2], ticks=tick_2, fraction=0.046, pad=0.08, orientation="horizontal")
+        # set font size of the ticks of the colorbars
+        cbar_0.ax.tick_params(labelsize=5) 
+        cbar_1.ax.tick_params(labelsize=5) 
+        cbar_2.ax.tick_params(labelsize=5) 
+        # adjust the width of the gap between subplots
+        plt.subplots_adjust(wspace=0.2)
+        pdf.savefig(fig)
+
 def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
-    '''
+    """
     Plot spatial intensity as the time goes by. The generated points can be also
     plotted on the same 2D space optionally.
-    '''
+    """
     assert len(S) == 3, '%d is an invalid dimension of the space.' % len(S)
     # split points into sequence of time and space.
     seq_t, seq_s = points[:, 0], points[:, 1:]
@@ -74,10 +148,10 @@ def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
     # anim.save('hpp.mp4', writer=writer)
 
 def plot_spatio_temporal_points(points):
-    '''
+    """
     Plot points in a 2D space by their spatial location, as well as coloring the
     points with their corresponding time.
-    '''
+    """
     assert points.shape[1] == 3, 'Unable to plot spatio-temporal points with dimension >= 3'
     # We have three dimensions of data. x and y will be plotted on the x and y
     # axis, while z will be represented with color.
@@ -100,18 +174,18 @@ def plot_spatio_temporal_points(points):
     plt.show()
 
 class InfluentialMatrixSimulator(object):
-    '''An abstract class for simulating the influential matrix'''
+    """An abstract class for simulating the influential matrix"""
     __metaclass__ = abc.ABCMeta
 
 class GaussianInfluentialMatrixSimulator(InfluentialMatrixSimulator):
-    '''
+    """
     A simulator for Gaussian Influence Matrix
     An area can be represented by a fixed-length square separated by a specific
     grid. In this influential matrix, the influence of a given point in the area
     will be depicted by a gaussian kernel, which means, the given point (grid)
     have impact on surronding grids w with the value of a gaussian function
     depended on the their locations.
-    '''
+    """
     def __init__(self, length, grid_size, mu=[0, 0], cov=[[1,0],[0,1]]):
         assert len(grid_size) == 2, 'Invalid grid size %s' % grid_size
         self.length    = length    # the actual length of the square area
@@ -121,7 +195,7 @@ class GaussianInfluentialMatrixSimulator(InfluentialMatrixSimulator):
         self._construct_A()
 
     def _construct_A(self):
-        '''construct the influential matrix A.'''
+        """construct the influential matrix A."""
         matrix_size = self.grid_size[0] * self.grid_size[1]
         self.A      = np.zeros((matrix_size, matrix_size))
         for i in range(matrix_size):
@@ -131,12 +205,12 @@ class GaussianInfluentialMatrixSimulator(InfluentialMatrixSimulator):
                 self.A[i, j] = self._influence(cur_x, cur_y, sur_x, sur_y)
 
     def _influence(self, cur_x, cur_y, sur_x, sur_y):
-        '''calculate the surroundings influence regarding the current coordinates.'''
+        """calculate the surroundings influence regarding the current coordinates."""
         multi_normal = multivariate_normal(mean=[cur_x, cur_y], cov=self.cov)
         return multi_normal.pdf([sur_x, sur_y])
 
     def location(self, i):
-        '''calculate location according to the index of the component.'''
+        """calculate location according to the index of the component."""
         x_idx = int(i / self.grid_size[1])
         y_idx = int(i % self.grid_size[1])
         x = (x_idx / self.grid_size[0]) * self.length
@@ -144,7 +218,7 @@ class GaussianInfluentialMatrixSimulator(InfluentialMatrixSimulator):
         return x, y
 
 def multi2spatial(seq_t, seq_d, ims):
-    '''convert multivariate sequence (seq_t, seq_d) to a spatio-temporal point process.'''
+    """convert multivariate sequence (seq_t, seq_d) to a spatio-temporal point process."""
     seq_s  = np.array([ ims.location(d) for d in seq_d ])
     seq_d  = seq_d.reshape((len(seq_d), 1))
     seq_t  = seq_t.reshape((len(seq_t), 1))
@@ -152,7 +226,7 @@ def multi2spatial(seq_t, seq_d, ims):
     return points
 
 def plot_multivariate_intensity(lam, points, S, t_slots, grid_size, interval):
-    '''Plot multivariate intensity as the time goes by.'''
+    """Plot multivariate intensity as the time goes by."""
     assert len(S) == 3, '%d is an invalid dimension of the space.' % len(S)
     # split points into sequence of time and space.
     seq_t, seq_d, seq_s = points[:, 0], points[:, 1], points[:, 2:]

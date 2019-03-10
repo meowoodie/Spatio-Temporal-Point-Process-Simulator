@@ -17,25 +17,107 @@ import sys
 import utils
 import arrow
 import numpy as np
+from scipy.stats import norm
 
-class DiffusionKernel(object):
+class StdDiffusionKernel(object):
     """
     Kernel function including the diffusion-type model proposed by Musmeci and
     Vere-Jones (1992).
     """
-    def __init__(self, beta=1., C=1., sigma_x = 1., sigma_y = 1.):
+    def __init__(self, C=1., beta=1., sigma_x=1., sigma_y=1.):
+        self.C       = C
         self.beta    = beta
         self.sigma_x = sigma_x
         self.sigma_y = sigma_y
 
-    def nu(self, delta_t, delta_s):
+    def nu(self, delta_t, delta_s, t=None, s=None):
         delta_x = delta_s[:, 0]
         delta_y = delta_s[:, 1]
         return np.exp(- self.beta * delta_t) * \
-            (1. / (2 * np.pi * self.sigma_x * self.sigma_y * delta_t)) * \
+            (self.C / (2 * np.pi * self.sigma_x * self.sigma_y * delta_t)) * \
             np.exp((- 1. / (2 * delta_t)) * \
                 ((np.square(delta_x) / np.square(self.sigma_x)) + \
                 (np.square(delta_y) / np.square(self.sigma_y))))
+
+class FreeDiffusionKernel(object):
+    """
+    A free diffusion kernel function based on the standard kernel function proposed 
+    by Musmeci and Vere-Jones (1992). The angle and shape of diffusion ellipse is able  
+    to vary according to the location.  
+    """
+    def __init__(self, layers=[20, 20], beta=1., C=1., Ws=None, bs=None):
+        # constant configuration
+        RAND_W_MAX = 3
+        RAND_W_MIN = -3
+        RAND_B_MAX = 1
+        RAND_B_MIN = -1
+        # kernel parameters
+        self.C     = C # kernel constant
+        self.beta  = beta
+        self.Ws    = []
+        self.bs    = []
+        # construct multi-layers neural networks
+        # where 2 is for x and y; And 3 is for sigma_x, sigma_y, rho
+        self.layers = [2] + layers + [3]
+        # construct weight & bias matrix layer by layer
+        for i in range(len(self.layers)-1):
+            if Ws is None and bs is None:
+                W = np.random.uniform(RAND_W_MIN, RAND_W_MAX, size=[self.layers[i], self.layers[i+1]])
+                b = np.random.uniform(RAND_B_MIN, RAND_B_MAX, self.layers[i+1])
+                print(W.shape, b.shape)
+                self.Ws.append(W)
+                self.bs.append(b)
+            else: 
+                if Ws[i].shape == (self.layers[i], self.layers[i+1]) and len(bs[i]) == self.layers[i+1]:
+                    self.Ws.append(Ws[i])
+                    self.bs.append(bs[i])
+                else:
+                    raise Exception("Incompatible shape of the weight matrix W=%s, b=%s at %d-th layer." % (Ws[i].shape, b[i].shape, i))
+        # Deprecated: handcraft NN
+        # self.W0   = np.random.uniform(-3, 3, size=[2, 20]) # if W is None else W
+        # self.W1   = np.random.uniform(-3, 3, size=[20, 20])
+        # self.W2   = np.random.uniform(-3, 3, size=[20, 3])
+        # self.b0   = np.random.uniform(-1, 1, 20)
+        # self.b1   = np.random.uniform(-1, 1, 20)
+        # self.b2   = np.random.uniform(-1, 1, 3)
+
+    def nonlinear_mapping(self, s):
+        """nonlinear mapping from the location space to the parameter space."""
+        # constant configuration
+        SIGMA_SHIFT = .1
+        SIMGA_SCALE = 1. / 4.
+        # construct multi-layers neural networks
+        output = s
+        for i in range(len(self.layers)-1):
+            output = self.__sigmoid(np.matmul(output, self.Ws[i]) + self.bs[i])
+        # project to parameters space
+        sigma_x = output[0] * SIMGA_SCALE + SIGMA_SHIFT # sigma_x spans (SIGMA_SHIFT, SIGMA_SHIFT + SIMGA_SCALE)
+        sigma_y = output[1] * SIMGA_SCALE + SIGMA_SHIFT # sigma_y spans (SIGMA_SHIFT, SIGMA_SHIFT + SIMGA_SCALE)
+        rho     = output[2] * 2. - 1.                   # rho spans (-1, 1)
+        return sigma_x, sigma_y, rho
+
+    def nu(self, delta_t, delta_s, t, s):
+        delta_x = delta_s[:, 0]
+        delta_y = delta_s[:, 1]
+        sigma_x, sigma_y, rho = self.nonlinear_mapping(s)
+        return np.exp(- self.beta * delta_t) * \
+            (self.C / (2 * np.pi * sigma_x * sigma_y * delta_t * np.sqrt(1 - np.square(rho)))) * \
+            np.exp((- 1. / (2 * delta_t * (1 - np.square(rho)))) * \
+                ((np.square(delta_x) / np.square(sigma_x)) + \
+                (np.square(delta_y) / np.square(sigma_y)) - \
+                (2 * rho * delta_x * delta_y / (sigma_x * sigma_y))))
+        # Deprecated: Static Elliptical Diffusion Kernel
+        # return np.exp(- self.beta * delta_t) * \
+        #     (self.C / (2 * np.pi * self.sigma_x * self.sigma_y * delta_t * np.sqrt(1 - np.square(self.rho)))) * \
+        #     np.exp((- 1. / (2 * delta_t * (1 - np.square(self.rho)))) * \
+        #         ((np.square(delta_x) / np.square(self.sigma_x)) + \
+        #         (np.square(delta_y) / np.square(self.sigma_y)) - \
+        #         (2 * self.rho * delta_x * delta_y / (self.sigma_x * self.sigma_y))))
+
+    @staticmethod
+    def __sigmoid(x):
+        """sigmoid activation function for nonlinear mapping"""
+        return 1. / (1. + np.exp(-x))
                 
 class HawkesLam(object):
     """Intensity of Spatio-temporal Hawkes point process"""
@@ -52,7 +134,7 @@ class HawkesLam(object):
         occurred.
         """
         if len(his_t) > 1:
-            val = self.mu + np.sum(self.kernel.nu(t-his_t, s-his_s))
+            val = self.mu + np.sum(self.kernel.nu(t-his_t, s-his_s, t, s))
         else:
             val = self.mu
         return val
@@ -177,15 +259,3 @@ class SpatialTemporalPointProcess(object):
         for b in range(batch_size):
             data[b, :points_list[b].shape[0]] = points_list[b]
         return data, sizes
-
-
-
-if __name__ == "__main__":
-    mu     = 1.
-    kernel = DiffusionKernel()
-    lam    = HawkesLam(mu, kernel, maximum=1e+6)
-    pp     = SpatialTemporalPointProcess(lam)
-
-    data = pp.generate(T=[0., 1.], S=[[-1., 1.], [-1., 1.]], batch_size=3)
-    print(data)
-    print(data.shape)
