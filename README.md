@@ -81,7 +81,7 @@ Standard Diffusion Kernel     | Elliptical Diffusion Kernel  | Free Diffusion Ke
 
 <!-- <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/kernel.png"> -->
 
-![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion.gif)  |  ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/kernel.png)
+![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/kernel.png)
 
 > The spatial maps of the parameters for the Free Diffusion Kernel (3 layers neural networks) shown above.
 
