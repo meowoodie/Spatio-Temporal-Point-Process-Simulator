@@ -75,7 +75,7 @@ Below are animations showing that how the spatial intensities have been evolving
 
 Standard Diffusion Kernel     | Elliptical Diffusion Kernel  | Free Diffusion Kernel
 :----------------------------:|:----------------------------:|:----------------------------:
-![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg3.gif)  |  ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/rotate-diffusion.gif) | ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion.gif)
+![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg3.gif)  |  ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/rotate-diffusion.gif) | ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion-1.gif)
 
 <!-- <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/kernel.png"> -->
 
