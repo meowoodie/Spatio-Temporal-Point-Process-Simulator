@@ -1,7 +1,7 @@
 Marked Spatio-Temporal Point Process Simulator
 ===
 
-A set of Python tools called `STPPG` for simulating Marked Spatio-temporal point processes. 
+A set of Python tools called `STPPG` for simulating any form of Marked Spatio-temporal self-exciting point processes. 
 
 ### Usage
 
@@ -17,7 +17,7 @@ For simulating any parametric point process defined in references, we need to de
 
 ### Examples
 
-A simple example for simulating a spatio-temporal hawkes point process by using `stppg`.
+A simple example for simulating a spatio-temporal hawkes point process equipped with a standard diffusion kernel by using `stppg`.
 ```python
 from stppg import DiffusionKernel, HawkesLam, MarkedSpatialTemporalPointProcess
 from utils import plot_spatio_temporal_points, plot_spatial_intensity
@@ -73,7 +73,7 @@ And see the console output below.
 [2018-09-21T08:32:26.300910-04:00] start animation.
 ```
 
-Here are animations of variation of spatial intensities as time goes by, simulated by two spatio-temporal Hawkes Point process.
+Below are animations showing that how the spatial intensities have been evolving as the time goes by, equipped with different kinds of kernel functions, including standard diffusion kernel and ***free diffusion kernel***.
 
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg3.gif">
 
@@ -81,9 +81,11 @@ Here are animations of variation of spatial intensities as time goes by, simulat
 
 <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/rotate-diffusion.gif">
 
-> Diffusion Kernel (`sigma = [.1, .1]`, `rho = - 0.5`)
+> Diffusion Kernel (`sigma = [.1, .05]`, `rho = - 0.5`)
 
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion.gif">
+Intensity map              |  Parameters maps
+:-------------------------:|:-------------------------:
+![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion.gif)  |  ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/kernel.png)
 
 > Free Diffusion Kernel (3 layers neural networks)
 
