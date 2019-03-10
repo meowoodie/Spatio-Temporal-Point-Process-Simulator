@@ -79,6 +79,14 @@ Here are animations of variation of spatial intensities as time goes by, simulat
 
 > Diffusion Kernel (`sigma = [.1, .1]`)
 
+<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/rotate-diffusion.gif">
+
+> Diffusion Kernel (`sigma = [.1, .1]`, `rho = - 0.5`)
+
+<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion.gif">
+
+> Free Diffusion Kernel (3 layers neural networks)
+
 ### References
 
 - [Y. Ogata. "Space-Time Point-Process Models for Earthquake Occurrences"](https://link.springer.com/article/10.1023/A:1003403601725)
