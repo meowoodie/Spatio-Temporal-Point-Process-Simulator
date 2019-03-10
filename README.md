@@ -75,19 +75,15 @@ And see the console output below.
 
 Below are animations showing that how the spatial intensities have been evolving as the time goes by, equipped with different kinds of kernel functions, including standard diffusion kernel and ***free diffusion kernel***.
 
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg3.gif">
+Standard Diffusion Kernel     | Elliptical Diffusion Kernel  | Free Diffusion Kernel
+:----------------------------:|:----------------------------:|:----------------------------:
+![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/stppg3.gif)  |  ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/rotate-diffusion.gif) | ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion.gif)
 
-> Diffusion Kernel (`sigma = [.1, .1]`)
+<!-- <img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/kernel.png"> -->
 
-<img width="460" height="460" src="https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/rotate-diffusion.gif">
-
-> Diffusion Kernel (`sigma = [.1, .05]`, `rho = - 0.5`)
-
-Intensity map              |  Parameters maps
-:-------------------------:|:-------------------------:
 ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/free-diffusion.gif)  |  ![](https://github.com/meowoodie/Spatio-Temporal-Point-Process-Simulator/blob/master/results/kernel.png)
 
-> Free Diffusion Kernel (3 layers neural networks)
+> The spatial maps of the parameters for the Free Diffusion Kernel (3 layers neural networks) shown above.
 
 ### References
 
