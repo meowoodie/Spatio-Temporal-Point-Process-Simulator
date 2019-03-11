@@ -22,7 +22,8 @@ def lebesgue_measure(S):
     sub_lebesgue_ms = [ sub_space[1] - sub_space[0] for sub_space in S ]
     return np.prod(sub_lebesgue_ms)
 
-def plot_spatial_kernel(path, kernel, S, grid_size):
+def plot_spatial_kernel(path, kernel, S, grid_size, 
+        sigma_x_clim=[0.1, 0.35], sigma_y_clim=[0.1, 0.35], rho_clim=[-1, 1]):
     """
     Plot spatial kernel parameters over the spatial region, including 
     sigma_x, sigma_x, and rho. 
@@ -53,16 +54,16 @@ def plot_spatial_kernel(path, kernel, S, grid_size):
         im_0     = axs[0].imshow(sigma_x_map, interpolation='nearest', origin='lower', cmap=cmap)
         im_1     = axs[1].imshow(sigma_y_map, interpolation='nearest', origin='lower', cmap=cmap)
         im_2     = axs[2].imshow(rho_map, interpolation='nearest', origin='lower', cmap=cmap)
-        # print(sigma_x_map.min(), sigma_x_map.max())
-        # print(sigma_y_map.min(), sigma_y_map.max())
-        # print(rho_map.min(), rho_map.max())
-        # # ticks for colorbars
-        im_0.set_clim(.1, .124)
-        im_1.set_clim(.1, .25)
-        im_2.set_clim(-0.6, 0.9)
-        tick_0 = np.linspace(.1, .124, 5).tolist()
-        tick_1 = np.linspace(.1, .3, 5).tolist()
-        tick_2 = np.linspace(-.6, .9, 5).tolist()
+        print(sigma_x_map.min(), sigma_x_map.max())
+        print(sigma_y_map.min(), sigma_y_map.max())
+        print(rho_map.min(), rho_map.max())
+        # ticks for colorbars
+        im_0.set_clim(*sigma_x_clim)
+        im_1.set_clim(*sigma_y_clim)
+        im_2.set_clim(*rho_clim)
+        tick_0 = np.linspace(sigma_x_clim[0], sigma_x_clim[1], 5).tolist()
+        tick_1 = np.linspace(sigma_y_clim[0], sigma_y_clim[1], 5).tolist()
+        tick_2 = np.linspace(rho_clim[0], rho_clim[1], 5).tolist()
         # set x, y labels for subplots
         axs[0].set_xlabel(r'$x$')
         axs[1].set_xlabel(r'$x$')

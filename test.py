@@ -56,7 +56,7 @@ def test_free_diffusion():
 
 
 if __name__ == '__main__':
-    np.random.seed(2)
+    np.random.seed(5)
     np.set_printoptions(suppress=True)
 
     test_free_diffusion()

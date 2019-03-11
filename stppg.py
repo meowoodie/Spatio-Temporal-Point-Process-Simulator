@@ -45,12 +45,18 @@ class FreeDiffusionKernel(object):
     by Musmeci and Vere-Jones (1992). The angle and shape of diffusion ellipse is able  
     to vary according to the location.  
     """
-    def __init__(self, layers=[20, 20], beta=1., C=1., Ws=None, bs=None):
+    def __init__(self, 
+        layers=[20, 20], beta=1., C=1., Ws=None, bs=None,
+        SIGMA_SHIFT=.1, SIGMA_SCALE=.25, 
+        RAND_W_MAX=3., RAND_W_MIN=-3., 
+        RAND_B_MAX=1., RAND_B_MIN=-1.):
         # constant configuration
-        RAND_W_MAX = 3
-        RAND_W_MIN = -3
-        RAND_B_MAX = 1
-        RAND_B_MIN = -1
+        self.SIGMA_SHIFT = SIGMA_SHIFT
+        self.SIGMA_SCALE = SIGMA_SCALE
+        self.RAND_W_MAX  = RAND_W_MAX
+        self.RAND_W_MIN  = RAND_W_MIN
+        self.RAND_B_MAX  = RAND_B_MAX
+        self.RAND_B_MIN  = RAND_B_MIN
         # kernel parameters
         self.C     = C # kernel constant
         self.beta  = beta
@@ -62,8 +68,8 @@ class FreeDiffusionKernel(object):
         # construct weight & bias matrix layer by layer
         for i in range(len(self.layers)-1):
             if Ws is None and bs is None:
-                W = np.random.uniform(RAND_W_MIN, RAND_W_MAX, size=[self.layers[i], self.layers[i+1]])
-                b = np.random.uniform(RAND_B_MIN, RAND_B_MAX, self.layers[i+1])
+                W = np.random.uniform(self.RAND_W_MIN, self.RAND_W_MAX, size=[self.layers[i], self.layers[i+1]])
+                b = np.random.uniform(self.RAND_B_MIN, self.RAND_B_MAX, self.layers[i+1])
                 print(W.shape, b.shape)
                 self.Ws.append(W)
                 self.bs.append(b)
@@ -83,17 +89,14 @@ class FreeDiffusionKernel(object):
 
     def nonlinear_mapping(self, s):
         """nonlinear mapping from the location space to the parameter space."""
-        # constant configuration
-        SIGMA_SHIFT = .1
-        SIMGA_SCALE = 1. / 4.
         # construct multi-layers neural networks
         output = s
         for i in range(len(self.layers)-1):
             output = self.__sigmoid(np.matmul(output, self.Ws[i]) + self.bs[i])
         # project to parameters space
-        sigma_x = output[0] * SIMGA_SCALE + SIGMA_SHIFT # sigma_x spans (SIGMA_SHIFT, SIGMA_SHIFT + SIMGA_SCALE)
-        sigma_y = output[1] * SIMGA_SCALE + SIGMA_SHIFT # sigma_y spans (SIGMA_SHIFT, SIGMA_SHIFT + SIMGA_SCALE)
-        rho     = output[2] * 2. - 1.                   # rho spans (-1, 1)
+        sigma_x = output[0] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_x spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
+        sigma_y = output[1] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_y spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
+        rho     = output[2] * 2. - 1.                             # rho spans (-1, 1)
         return sigma_x, sigma_y, rho
 
     def nu(self, delta_t, delta_s, t, s):
