@@ -47,16 +47,10 @@ class FreeDiffusionKernel(object):
     """
     def __init__(self, 
         layers=[20, 20], beta=1., C=1., Ws=None, bs=None,
-        SIGMA_SHIFT=.1, SIGMA_SCALE=.25, 
-        RAND_W_MAX=3., RAND_W_MIN=-3., 
-        RAND_B_MAX=1., RAND_B_MIN=-1.):
+        SIGMA_SHIFT=.1, SIGMA_SCALE=.25):
         # constant configuration
         self.SIGMA_SHIFT = SIGMA_SHIFT
         self.SIGMA_SCALE = SIGMA_SCALE
-        self.RAND_W_MAX  = RAND_W_MAX
-        self.RAND_W_MIN  = RAND_W_MIN
-        self.RAND_B_MAX  = RAND_B_MAX
-        self.RAND_B_MIN  = RAND_B_MIN
         # kernel parameters
         self.C     = C # kernel constant
         self.beta  = beta
@@ -68,8 +62,10 @@ class FreeDiffusionKernel(object):
         # construct weight & bias matrix layer by layer
         for i in range(len(self.layers)-1):
             if Ws is None and bs is None:
-                W = np.random.uniform(self.RAND_W_MIN, self.RAND_W_MAX, size=[self.layers[i], self.layers[i+1]])
-                b = np.random.uniform(self.RAND_B_MIN, self.RAND_B_MAX, self.layers[i+1])
+                W = np.random.normal(scale=5.0, size=[self.layers[i], self.layers[i+1]])
+                b = np.random.normal(size=self.layers[i+1])
+                # W = np.random.uniform(self.RAND_W_MIN, self.RAND_W_MAX, size=[self.layers[i], self.layers[i+1]])
+                # b = np.random.uniform(self.RAND_B_MIN, self.RAND_B_MAX, self.layers[i+1])
                 print(W.shape, b.shape)
                 self.Ws.append(W)
                 self.bs.append(b)
@@ -79,13 +75,6 @@ class FreeDiffusionKernel(object):
                     self.bs.append(bs[i])
                 else:
                     raise Exception("Incompatible shape of the weight matrix W=%s, b=%s at %d-th layer." % (Ws[i].shape, b[i].shape, i))
-        # Deprecated: handcraft NN
-        # self.W0   = np.random.uniform(-3, 3, size=[2, 20]) # if W is None else W
-        # self.W1   = np.random.uniform(-3, 3, size=[20, 20])
-        # self.W2   = np.random.uniform(-3, 3, size=[20, 3])
-        # self.b0   = np.random.uniform(-1, 1, 20)
-        # self.b1   = np.random.uniform(-1, 1, 20)
-        # self.b2   = np.random.uniform(-1, 1, 3)
 
     def nonlinear_mapping(self, s):
         """nonlinear mapping from the location space to the parameter space."""
