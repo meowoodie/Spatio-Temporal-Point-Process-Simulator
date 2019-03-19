@@ -4,7 +4,7 @@
 import numpy as np
 
 import matplotlib.pyplot as plt
-from stppg import StdDiffusionKernel, HawkesLam, SpatialTemporalPointProcess, FreeDiffusionKernel
+from stppg import StdDiffusionKernel, HawkesLam, SpatialTemporalPointProcess, GaussianDiffusionKernel
 from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_spatial_kernel
 
 def test_std_diffusion():
@@ -29,10 +29,10 @@ def test_std_diffusion():
     plot_spatial_intensity(lam, points[0], S=[[0., 10.], [-1., 1.], [-1., 1.]],
         t_slots=1000, grid_size=50, interval=50)
 
-def test_free_diffusion():
+def test_gaussian_diffusion():
     '''Test Spatio-Temporal Point Process Generator'''
     mu     = .2
-    kernel = FreeDiffusionKernel(layers=[5, 5], C=1., beta=1.)
+    kernel = GaussianDiffusionKernel(layers=[5], C=1., beta=1.)
     lam    = HawkesLam(mu, kernel, maximum=1e+3)
     pp     = SpatialTemporalPointProcess(lam)
     print(kernel.Ws)
@@ -48,17 +48,17 @@ def test_free_diffusion():
     print(sizes)
 
     # read or save to local npy file.
-    # points = np.load('results/hpp_Mar_9.npy')
-    np.save('results/free_hpp_Mar_14.npy', points)
+    # points = np.load('results/free_hpp_Mar_15_layer_5.npy')
+    np.save('results/gaussian_hpp_Mar_15_layer_5.npy', points)
 
     # plot intensity of the process over the time
-    plot_spatial_intensity(lam, points[1], S=[[0., 10.], [-1., 1.], [-1., 1.]],
+    plot_spatial_intensity(lam, points[2], S=[[0., 10.], [-1., 1.], [-1., 1.]],
         t_slots=1000, grid_size=50, interval=50)
 
 
 
 if __name__ == '__main__':
-    np.random.seed(7)
+    np.random.seed(5)
     np.set_printoptions(suppress=True)
 
-    test_free_diffusion()
+    test_gaussian_diffusion()

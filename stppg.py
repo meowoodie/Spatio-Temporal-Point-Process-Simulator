@@ -39,7 +39,7 @@ class StdDiffusionKernel(object):
                 ((np.square(delta_x) / np.square(self.sigma_x)) + \
                 (np.square(delta_y) / np.square(self.sigma_y))))
 
-class FreeDiffusionKernel(object):
+class GaussianDiffusionKernel(object):
     """
     A free diffusion kernel function based on the standard kernel function proposed 
     by Musmeci and Vere-Jones (1992). The angle and shape of diffusion ellipse is able  
