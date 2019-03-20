@@ -37,13 +37,22 @@ def plot_spatial_kernel(path, kernel, S, grid_size,
     sigma_y_map = np.zeros((grid_size, grid_size))
     rho_map     = np.zeros((grid_size, grid_size))
     # grid entris calculation
-    for x_idx in range(grid_size):
-        for y_idx in range(grid_size):
-            s                         = [x_span[x_idx], y_span[y_idx]]
-            sigma_x, sigma_y, rho     = kernel.nonlinear_mapping(s)
-            sigma_x_map[x_idx][y_idx] = sigma_x
-            sigma_y_map[x_idx][y_idx] = sigma_y
-            rho_map[x_idx][y_idx]     = rho
+    # for x_idx in range(grid_size):
+    #     for y_idx in range(grid_size):
+    #         s                                 = np.array([[x_span[x_idx], y_span[y_idx]]])
+    #         mu_x, mu_y, sigma_x, sigma_y, rho = kernel.nonlinear_mapping(s)
+    #         sigma_x_map[x_idx][y_idx]         = sigma_x
+    #         sigma_y_map[x_idx][y_idx]         = sigma_y
+    #         rho_map[x_idx][y_idx]             = rho
+    s = np.array([ [x_span[x_idx], y_span[y_idx]] 
+        for x_idx in range(grid_size) for y_idx in range(grid_size) ])
+    mu_xs, mu_ys, sigma_xs, sigma_ys, rhos = kernel.nonlinear_mapping(s)
+    indices = [ [x_idx, y_idx] 
+        for x_idx in range(grid_size) for y_idx in range(grid_size) ]
+    for i in range(len(indices)):
+        sigma_x_map[indices[i][0]][indices[i][1]] = sigma_xs[i]
+        sigma_y_map[indices[i][0]][indices[i][1]] = sigma_ys[i]
+        rho_map[indices[i][0]][indices[i][1]]     = rhos[i]
     # plotting
     plt.rc('text', usetex=True)
     plt.rc("font", family="serif")
@@ -100,6 +109,8 @@ def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
     plotted on the same 2D space optionally.
     """
     assert len(S) == 3, '%d is an invalid dimension of the space.' % len(S)
+    # remove zero points
+    points = points[points[:, 0] > 0]
     # split points into sequence of time and space.
     seq_t, seq_s = points[:, 0], points[:, 1:]
     # define the span for each subspace
@@ -113,12 +124,8 @@ def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
         sub_seq_s = seq_s[:len(sub_seq_t)]
         for x_idx in range(grid_size):
             for y_idx in range(grid_size):
-                s = [x_span[x_idx], y_span[y_idx]]
-                # _seq_t = np.array(sub_seq_t.tolist() + [t])
-                # _seq_s = np.array(sub_seq_s.tolist() + [[x_span[x_idx], y_span[y_idx]]])
-                _map[x_idx][y_idx] = lam.value(
-                    t, sub_seq_t, 
-                    s, sub_seq_s)
+                s                  = [x_span[x_idx], y_span[y_idx]]
+                _map[x_idx][y_idx] = lam.value(t, sub_seq_t, s, sub_seq_s)
         return _map
     # prepare the heatmap data in advance
     print('[%s] preparing the dataset %d × (%d, %d) for plotting.' %

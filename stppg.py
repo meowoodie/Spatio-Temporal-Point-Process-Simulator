@@ -30,7 +30,9 @@ class StdDiffusionKernel(object):
         self.sigma_x = sigma_x
         self.sigma_y = sigma_y
 
-    def nu(self, delta_t, delta_s, t=None, s=None):
+    def nu(self, t, s, his_t, his_s):
+        delta_s = s - his_s
+        delta_t = t - his_t
         delta_x = delta_s[:, 0]
         delta_y = delta_s[:, 1]
         return np.exp(- self.beta * delta_t) * \
@@ -39,34 +41,35 @@ class StdDiffusionKernel(object):
                 ((np.square(delta_x) / np.square(self.sigma_x)) + \
                 (np.square(delta_y) / np.square(self.sigma_y))))
 
+
+
 class GaussianDiffusionKernel(object):
     """
-    A free diffusion kernel function based on the standard kernel function proposed 
+    A Gaussian diffusion kernel function based on the standard kernel function proposed 
     by Musmeci and Vere-Jones (1992). The angle and shape of diffusion ellipse is able  
     to vary according to the location.  
     """
     def __init__(self, 
         layers=[20, 20], beta=1., C=1., Ws=None, bs=None,
-        SIGMA_SHIFT=.1, SIGMA_SCALE=.25):
+        SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=0.1, is_centered=True):
         # constant configuration
+        self.MU_SCALE    = MU_SCALE
         self.SIGMA_SHIFT = SIGMA_SHIFT
         self.SIGMA_SCALE = SIGMA_SCALE
         # kernel parameters
-        self.C     = C # kernel constant
-        self.beta  = beta
-        self.Ws    = []
-        self.bs    = []
+        self.C           = C # kernel constant
+        self.beta        = beta
+        self.Ws          = []
+        self.bs          = []
+        self.is_centered = is_centered
         # construct multi-layers neural networks
-        # where 2 is for x and y; And 3 is for sigma_x, sigma_y, rho
-        self.layers = [2] + layers + [3]
+        # where 2 is for x and y; And 5 is for mu_x, mu_y, sigma_x, sigma_y, rho
+        self.layers = [2] + layers + [5]
         # construct weight & bias matrix layer by layer
         for i in range(len(self.layers)-1):
             if Ws is None and bs is None:
                 W = np.random.normal(scale=5.0, size=[self.layers[i], self.layers[i+1]])
                 b = np.random.normal(size=self.layers[i+1])
-                # W = np.random.uniform(self.RAND_W_MIN, self.RAND_W_MAX, size=[self.layers[i], self.layers[i+1]])
-                # b = np.random.uniform(self.RAND_B_MIN, self.RAND_B_MAX, self.layers[i+1])
-                print(W.shape, b.shape)
                 self.Ws.append(W)
                 self.bs.append(b)
             else: 
@@ -76,41 +79,65 @@ class GaussianDiffusionKernel(object):
                 else:
                     raise Exception("Incompatible shape of the weight matrix W=%s, b=%s at %d-th layer." % (Ws[i].shape, b[i].shape, i))
 
-    def nonlinear_mapping(self, s):
+    def nonlinear_mapping(self, locations):
         """nonlinear mapping from the location space to the parameter space."""
         # construct multi-layers neural networks
-        output = s
+        output = locations
         for i in range(len(self.layers)-1):
             output = self.__sigmoid(np.matmul(output, self.Ws[i]) + self.bs[i])
         # project to parameters space
-        sigma_x = output[0] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_x spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
-        sigma_y = output[1] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_y spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
-        rho     = output[2] * 2. - 1.                             # rho spans (-1, 1)
-        return sigma_x, sigma_y, rho
+        mu_xs    = (output[:, 0] - 0.5) * self.MU_SCALE
+        mu_ys    = (output[:, 1] - 0.5) * self.MU_SCALE
+        sigma_xs = output[:, 2] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_x spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
+        sigma_ys = output[:, 3] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_y spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
+        rhos     = output[:, 4] * 1.5 - .75                           # rho spans (-1, 1)
+        return mu_xs, mu_ys, sigma_xs, sigma_ys, rhos
 
-    def nu(self, delta_t, delta_s, t, s):
+    def nu(self, t, s, his_t, his_s):
+        delta_s = s - his_s
+        delta_t = t - his_t
         delta_x = delta_s[:, 0]
         delta_y = delta_s[:, 1]
-        sigma_x, sigma_y, rho = self.nonlinear_mapping(s)
+        mu_xs, mu_ys, sigma_xs, sigma_ys, rhos = self.nonlinear_mapping(his_s)
+        if self.is_centered:
+            mu_xs = 0
+            mu_ys = 0
         return np.exp(- self.beta * delta_t) * \
-            (self.C / (2 * np.pi * sigma_x * sigma_y * delta_t * np.sqrt(1 - np.square(rho)))) * \
-            np.exp((- 1. / (2 * delta_t * (1 - np.square(rho)))) * \
-                ((np.square(delta_x) / np.square(sigma_x)) + \
-                (np.square(delta_y) / np.square(sigma_y)) - \
-                (2 * rho * delta_x * delta_y / (sigma_x * sigma_y))))
-        # Deprecated: Static Elliptical Diffusion Kernel
-        # return np.exp(- self.beta * delta_t) * \
-        #     (self.C / (2 * np.pi * self.sigma_x * self.sigma_y * delta_t * np.sqrt(1 - np.square(self.rho)))) * \
-        #     np.exp((- 1. / (2 * delta_t * (1 - np.square(self.rho)))) * \
-        #         ((np.square(delta_x) / np.square(self.sigma_x)) + \
-        #         (np.square(delta_y) / np.square(self.sigma_y)) - \
-        #         (2 * self.rho * delta_x * delta_y / (self.sigma_x * self.sigma_y))))
+            (self.C / (2 * np.pi * sigma_xs * sigma_ys * delta_t * np.sqrt(1 - np.square(rhos)))) * \
+            np.exp((- 1. / (2 * delta_t * (1 - np.square(rhos)))) * \
+                ((np.square(delta_x - mu_xs) / np.square(sigma_xs)) + \
+                (np.square(delta_y - mu_ys) / np.square(sigma_ys)) - \
+                (2 * rhos * (delta_x - mu_xs) * (delta_y - mu_ys) / (sigma_xs * sigma_ys))))
 
     @staticmethod
     def __sigmoid(x):
         """sigmoid activation function for nonlinear mapping"""
         return 1. / (1. + np.exp(-x))
-                
+
+
+
+class GaussianMixtureDiffusionKernel(object):
+    """
+    A Gaussian mixture diffusion kernel function is superposed by multiple Gaussian diffusion 
+    kernel function. The number of the Gaussian components is specified by n_comp. 
+    """
+    def __init__(self, n_comp, layers, beta=1., C=1., SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=.1):
+        self.n_comp = n_comp
+        self.gdks   = []
+        for k in range(self.n_comp):
+            gdk = GaussianDiffusionKernel(
+                layers=layers, beta=beta, C=C, Ws=None, bs=None, 
+                SIGMA_SHIFT=SIGMA_SHIFT, SIGMA_SCALE=SIGMA_SCALE, MU_SCALE=MU_SCALE, is_centered=False)
+            self.gdks.append(gdk)
+    
+    def nu(self, t, s, his_t, his_s):
+        nu = 0
+        for k in range(self.n_comp):
+            nu += (1./self.n_comp) * self.gdks[k].nu(t, s, his_t, his_s)
+        return nu
+        
+
+
 class HawkesLam(object):
     """Intensity of Spatio-temporal Hawkes point process"""
     def __init__(self, mu, kernel, maximum=1e+4):
@@ -126,7 +153,7 @@ class HawkesLam(object):
         occurred.
         """
         if len(his_t) > 1:
-            val = self.mu + np.sum(self.kernel.nu(t-his_t, s-his_s, t, s))
+            val = self.mu + np.sum(self.kernel.nu(t, s, his_t, his_s))
         else:
             val = self.mu
         return val
