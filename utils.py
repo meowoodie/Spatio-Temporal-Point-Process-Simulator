@@ -131,10 +131,13 @@ def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
     print('[%s] preparing the dataset %d × (%d, %d) for plotting.' %
         (arrow.now(), t_slots, grid_size, grid_size), file=sys.stderr)
     data = np.array([ heatmap(t_span[i]) for i in range(t_slots) ])
+    print(data.sum(axis=-1).sum(axis=-1).argmax())
 
     # initiate the figure and plot
     fig = plt.figure()
-    im  = plt.imshow(data[-1], cmap='hot', animated=True) # set last image initially for automatically setting color range.
+    # set the image with largest total intensity as the intial plot for automatically setting color range.
+    # im  = plt.imshow(data[data.sum(axis=-1).sum(axis=-1).argmax()], cmap='hot', animated=True) 
+    im  = plt.imshow(data[-1], cmap='hot', animated=True) 
     # function for updating the image of each frame
     def animate(i):
         # print(t_span[i])

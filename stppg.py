@@ -86,8 +86,8 @@ class GaussianDiffusionKernel(object):
         for i in range(len(self.layers)-1):
             output = self.__sigmoid(np.matmul(output, self.Ws[i]) + self.bs[i])
         # project to parameters space
-        mu_xs    = (output[:, 0] - 0.5) * self.MU_SCALE
-        mu_ys    = (output[:, 1] - 0.5) * self.MU_SCALE
+        mu_xs    = (output[:, 0] - 0.5) * 2 * self.MU_SCALE
+        mu_ys    = (output[:, 1] - 0.5) * 2 * self.MU_SCALE
         sigma_xs = output[:, 2] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_x spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
         sigma_ys = output[:, 3] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_y spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
         rhos     = output[:, 4] * 1.5 - .75                           # rho spans (-1, 1)
