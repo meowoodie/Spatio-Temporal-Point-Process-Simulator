@@ -116,26 +116,69 @@ class GaussianDiffusionKernel(object):
 
 
 
+# class GaussianMixtureDiffusionKernel(object):
+#     """
+#     A Gaussian mixture diffusion kernel function is superposed by multiple Gaussian diffusion 
+#     kernel function. The number of the Gaussian components is specified by n_comp. 
+#     """
+#     def __init__(self, n_comp, layers, beta=1., C=1., SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=.1):
+#         self.n_comp = n_comp
+#         self.gdks   = []
+#         for k in range(self.n_comp):
+#             gdk = GaussianDiffusionKernel(
+#                 layers=layers, beta=beta, C=C, Ws=None, bs=None, 
+#                 SIGMA_SHIFT=SIGMA_SHIFT, SIGMA_SCALE=SIGMA_SCALE, MU_SCALE=MU_SCALE, is_centered=False)
+#             self.gdks.append(gdk)
+    
+#     def nu(self, t, s, his_t, his_s):
+#         nu = 0
+#         for k in range(self.n_comp):
+#             nu += (1./self.n_comp) * self.gdks[k].nu(t, s, his_t, his_s)
+#         return nu
+
+
+
 class GaussianMixtureDiffusionKernel(object):
     """
     A Gaussian mixture diffusion kernel function is superposed by multiple Gaussian diffusion 
     kernel function. The number of the Gaussian components is specified by n_comp. 
     """
-    def __init__(self, n_comp, layers, beta=1., C=1., SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=.1):
+    def __init__(self, n_comp, layers, 
+        beta=1., C=1., SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=.1,
+        Wss=None, bss=None, W_phis=None):
+        self.W_phis = W_phis
         self.n_comp = n_comp
         self.gdks   = []
+        # Gaussian mixture component initialization
         for k in range(self.n_comp):
+            Ws  = Wss[k] if Wss is not None else None
+            bs  = bss[k] if bss is not None else None
             gdk = GaussianDiffusionKernel(
-                layers=layers, beta=beta, C=C, Ws=None, bs=None, 
+                layers=layers, beta=beta, C=C, Ws=Ws, bs=bs, 
                 SIGMA_SHIFT=SIGMA_SHIFT, SIGMA_SCALE=SIGMA_SCALE, MU_SCALE=MU_SCALE, is_centered=False)
             self.gdks.append(gdk)
+        # Gaussian mixture weighting matrix initialization
+        if self.W_phis is None:
+            self.W_phis = [ np.random.normal(scale=5.0, size=[2, 1]) for k in range(self.n_comp) ]
     
     def nu(self, t, s, his_t, his_s):
         nu = 0
         for k in range(self.n_comp):
-            nu += (1./self.n_comp) * self.gdks[k].nu(t, s, his_t, his_s)
+            phi = self._softmax(his_s, k)                   # [ n_his ]
+            nu += phi * self.gdks[k].nu(t, s, his_t, his_s) # [ n_his ]
         return nu
-        
+
+    def _softmax(self, locations, k):
+        """
+        Gaussian mixture components are weighted by phi^k, which are computed by a softmax function, i.e., 
+        phi^k(x, y) = e^{[x y]^T w^k} / \sum_{i=1}^K e^{[x y]^T w^i}
+        """
+        numerator   = np.exp(np.matmul(locations, self.W_phis[k])).flatten()
+        denominator = np.concatenate([ 
+            np.exp(np.matmul(locations, self.W_phis[i])) 
+            for i in range(self.n_comp) ], axis=1).sum(axis=1)
+        phis        = numerator / denominator
+        return phis
 
 
 class HawkesLam(object):
