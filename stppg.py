@@ -145,10 +145,10 @@ class GaussianMixtureDiffusionKernel(object):
     """
     def __init__(self, n_comp, layers, 
         beta=1., C=1., SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=.1,
-        Wss=None, bss=None, W_phis=None):
-        self.W_phis = W_phis
-        self.n_comp = n_comp
-        self.gdks   = []
+        Wss=None, bss=None, Wphis=None):
+        self.gdks   = []     # Gaussian components
+        self.Wphis  = Wphis  # weighting vectors for Gaussian components
+        self.n_comp = n_comp # number of Gaussian components
         # Gaussian mixture component initialization
         for k in range(self.n_comp):
             Ws  = Wss[k] if Wss is not None else None
@@ -158,8 +158,8 @@ class GaussianMixtureDiffusionKernel(object):
                 SIGMA_SHIFT=SIGMA_SHIFT, SIGMA_SCALE=SIGMA_SCALE, MU_SCALE=MU_SCALE, is_centered=False)
             self.gdks.append(gdk)
         # Gaussian mixture weighting matrix initialization
-        if self.W_phis is None:
-            self.W_phis = [ np.random.normal(scale=5.0, size=[2, 1]) for k in range(self.n_comp) ]
+        if self.Wphis is None:
+            self.Wphis = [ np.random.normal(scale=5.0, size=[2, 1]) for k in range(self.n_comp) ]
     
     def nu(self, t, s, his_t, his_s):
         nu = 0
@@ -173,9 +173,9 @@ class GaussianMixtureDiffusionKernel(object):
         Gaussian mixture components are weighted by phi^k, which are computed by a softmax function, i.e., 
         phi^k(x, y) = e^{[x y]^T w^k} / \sum_{i=1}^K e^{[x y]^T w^i}
         """
-        numerator   = np.exp(np.matmul(locations, self.W_phis[k])).flatten()
+        numerator   = np.exp(np.matmul(locations, self.Wphis[k])).flatten()
         denominator = np.concatenate([ 
-            np.exp(np.matmul(locations, self.W_phis[i])) 
+            np.exp(np.matmul(locations, self.Wphis[i])) 
             for i in range(self.n_comp) ], axis=1).sum(axis=1)
         phis        = numerator / denominator
         return phis
