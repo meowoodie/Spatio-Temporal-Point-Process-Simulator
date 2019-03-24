@@ -85,6 +85,7 @@ Note that the parameters of the Gaussian (and Gaussian mixture) diffusion kernel
 
 ### References
 
+- [Preprint: S. Zhu and Y. Xie. "Imitating Spatio-temporal Point Process via Gaussian Mixture Diffusion Kernel"](https://meowoodie.github.io)
 - [Y. Ogata. "Space-Time Point-Process Models for Earthquake Occurrences"](https://link.springer.com/article/10.1023/A:1003403601725)
 - [F. Musmeci, D. Vere-Jones. "A Space-Time Clustering Model for Historical Earthquakes"](https://link.springer.com/content/pdf/10.1007%2FBF00048666.pdf)
-- [S. Zhu and Y. Xie. "Crime Linkage Detection by Spatio-Temporal Text Point Processes"](https://arxiv.org/abs/1902.00440)
+- [S. Zhu and Y. Xie. "Crime Linkage Detection by Spatio-Temporal-Textual Point Processes"](https://arxiv.org/abs/1902.00440)
