@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from tqdm import tqdm
 from matplotlib import animation
 from matplotlib.backends.backend_pdf import PdfPages
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -130,7 +131,7 @@ def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
     # prepare the heatmap data in advance
     print('[%s] preparing the dataset %d × (%d, %d) for plotting.' %
         (arrow.now(), t_slots, grid_size, grid_size), file=sys.stderr)
-    data = np.array([ heatmap(t_span[i]) for i in range(t_slots) ])
+    data = np.array([ heatmap(t_span[i]) for i in tqdm(range(t_slots)) ])
     print(data.sum(axis=-1).sum(axis=-1).argmax())
 
     # initiate the figure and plot
