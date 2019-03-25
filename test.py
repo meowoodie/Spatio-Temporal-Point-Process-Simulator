@@ -97,7 +97,7 @@ def test_pretrain_gaussian_mixture_diffusion():
     Test Spatio-Temporal Point Process Generator equipped with 
     pretrained Gaussian mixture diffusion kernel
     '''
-    params = np.load('data/gaussian_mixture_params.npy')
+    params = np.load('data/gaussian_mixture_params.npz')
     mu     = params['mu']
     kernel = GaussianMixtureDiffusionKernel(
         n_comp=5, layers=[5], C=1., beta=params['beta'], 
