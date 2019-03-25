@@ -101,7 +101,7 @@ def test_pretrain_gaussian_mixture_diffusion():
     mu     = params['mu']
     kernel = GaussianMixtureDiffusionKernel(
         n_comp=5, layers=[5], C=1., beta=params['beta'], 
-        SIGMA_SHIFT=.05, SIGMA_SCALE=.1, MU_SCALE=.05,
+        SIGMA_SHIFT=.05, SIGMA_SCALE=.2, MU_SCALE=.1,
         Wss=params['Wss'], bss=params['bss'], Wphis=params['Wphis'])
     lam    = HawkesLam(mu, kernel, maximum=1e+3)
     pp     = SpatialTemporalPointProcess(lam)
