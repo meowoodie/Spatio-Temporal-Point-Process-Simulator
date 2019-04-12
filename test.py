@@ -5,7 +5,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from stppg import HawkesLam, SpatialTemporalPointProcess, StdDiffusionKernel, GaussianDiffusionKernel, GaussianMixtureDiffusionKernel
-from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_spatial_kernel
+from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_spatial_kernel, DataAdapter
 
 def test_std_diffusion():
     '''
@@ -97,11 +97,12 @@ def test_pretrain_gaussian_mixture_diffusion():
     Test Spatio-Temporal Point Process Generator equipped with 
     pretrained Gaussian mixture diffusion kernel
     '''
-    params = np.load('data/gaussian_mixture_params.npz')
+    params = np.load('data/mle_gaussian_mixture_params.npz')
     mu     = params['mu']
+    beta   = params['beta']
     kernel = GaussianMixtureDiffusionKernel(
-        n_comp=5, layers=[5], C=1., beta=params['beta'], 
-        SIGMA_SHIFT=.05, SIGMA_SCALE=.2, MU_SCALE=.1,
+        n_comp=5, layers=[5], C=1., beta=beta, 
+        SIGMA_SHIFT=.05, SIGMA_SCALE=.2, MU_SCALE=.01,
         Wss=params['Wss'], bss=params['bss'], Wphis=params['Wphis'])
     lam    = HawkesLam(mu, kernel, maximum=1e+3)
     pp     = SpatialTemporalPointProcess(lam)
@@ -114,7 +115,9 @@ def test_pretrain_gaussian_mixture_diffusion():
     # print(sizes)
 
     # read or save to local npy file.
-    points = np.load('data/apd.crime.perday.npy')
+    points = np.load('data/apd.robbery.permonth.npy')
+    da     = DataAdapter(init_data=points)
+    points = da.normalize(points)
     # np.save('results/gaussian_hpp_Mar_15_layer_5.npy', points)
 
     # plot intensity of the process over the time
