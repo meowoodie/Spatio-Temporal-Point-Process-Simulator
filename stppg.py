@@ -114,29 +114,7 @@ class GaussianDiffusionKernel(object):
         """sigmoid activation function for nonlinear mapping"""
         return 1. / (1. + np.exp(-x))
 
-
-
-# class GaussianMixtureDiffusionKernel(object):
-#     """
-#     A Gaussian mixture diffusion kernel function is superposed by multiple Gaussian diffusion 
-#     kernel function. The number of the Gaussian components is specified by n_comp. 
-#     """
-#     def __init__(self, n_comp, layers, beta=1., C=1., SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=.1):
-#         self.n_comp = n_comp
-#         self.gdks   = []
-#         for k in range(self.n_comp):
-#             gdk = GaussianDiffusionKernel(
-#                 layers=layers, beta=beta, C=C, Ws=None, bs=None, 
-#                 SIGMA_SHIFT=SIGMA_SHIFT, SIGMA_SCALE=SIGMA_SCALE, MU_SCALE=MU_SCALE, is_centered=False)
-#             self.gdks.append(gdk)
-    
-#     def nu(self, t, s, his_t, his_s):
-#         nu = 0
-#         for k in range(self.n_comp):
-#             nu += (1./self.n_comp) * self.gdks[k].nu(t, s, his_t, his_s)
-#         return nu
-
-
+        
 
 class GaussianMixtureDiffusionKernel(object):
     """
