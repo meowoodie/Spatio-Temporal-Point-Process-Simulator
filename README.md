@@ -71,7 +71,7 @@ And see the console output below.
 [2018-09-21T08:32:26.300910-04:00] start animation.
 ```
 
-Below are animations showing that how the spatial intensities have been evolving as the time goes by, equipped with different kinds of kernel functions, including standard diffusion kernel, ***Gaussian diffusion kernel***, ***Gaussian mixture diffusion kernel***.
+The animations below show the progression of conditional intensities through time with different types of kernel functions.
 
 Standard Diffusion Kernel     | Gaussian Diffusion Kernel    | Gaussian Mixture Diffusion Kernel
 :----------------------------:|:----------------------------:|:----------------------------:
