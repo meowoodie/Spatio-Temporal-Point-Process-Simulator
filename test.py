@@ -97,7 +97,7 @@ def test_pretrain_gaussian_mixture_diffusion():
     Test Spatio-Temporal Point Process Generator equipped with 
     pretrained Gaussian mixture diffusion kernel
     '''
-    params = np.load('data/mle_gaussian_mixture_params.npz')
+    params = np.load('data/ambulance_mle_gaussian_mixture_params.npz')
     mu     = params['mu']
     beta   = params['beta']
     kernel = GaussianMixtureDiffusionKernel(
@@ -115,10 +115,11 @@ def test_pretrain_gaussian_mixture_diffusion():
     # print(sizes)
 
     # read or save to local npy file.
-    points = np.load('data/apd.robbery.permonth.npy')
+    points = np.load('data/ambulance.perday.npy')
     da     = DataAdapter(init_data=points)
     points = da.normalize(points)
     # np.save('results/gaussian_hpp_Mar_15_layer_5.npy', points)
+    print(points[0].shape)
 
     # plot intensity of the process over the time
     plot_spatial_intensity(lam, points[0], S=[[0., 10.], [-1., 1.], [-1., 1.]],

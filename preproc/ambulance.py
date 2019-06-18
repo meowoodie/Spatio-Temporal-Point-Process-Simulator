@@ -18,7 +18,7 @@ with open("data/eventos_desagregados.csv", "r") as f:
             timestamp       = float(arrow.get(year, mon, date, hour, mins, 0).timestamp)
             lat = float(lat)
             lng = float(lng)
-            if lat < -21 and lat > - 24 and lng < -42 and lng > -45:
+            if lat < -22.621 and lat > -23.226 and lng < -43.050 and lng > -43.868:
                 data.append([timestamp, lat, lng])
 
     data = np.array(data)
@@ -53,7 +53,7 @@ with open("data/eventos_desagregados.csv", "r") as f:
     xlim      = [ x_nonzero.min(), x_nonzero.max() ]
     ylim      = [ y_nonzero.min(), y_nonzero.max() ]
 
-    np.save('data/ambulance.perday.npy', expert_seq)
+    np.save('data/rescale.ambulance.perday.npy', expert_seq)
 
     print(expert_seq.shape)
     print("T", T)
