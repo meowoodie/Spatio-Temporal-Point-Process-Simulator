@@ -23,8 +23,8 @@ def lebesgue_measure(S):
     sub_lebesgue_ms = [ sub_space[1] - sub_space[0] for sub_space in S ]
     return np.prod(sub_lebesgue_ms)
 
-def plot_spatial_kernel(path, kernel, S, grid_size, 
-        sigma_x_clim=[0.1, 0.35], sigma_y_clim=[0.1, 0.35], rho_clim=[-1, 1]):
+def plot_spatial_kernel(path, kernel, S, grid_size,
+        sigma_x_clim=None, sigma_y_clim=None, rho_clim=None):
     """
     Plot spatial kernel parameters over the spatial region, including 
     sigma_x, sigma_x, and rho. 
@@ -38,16 +38,15 @@ def plot_spatial_kernel(path, kernel, S, grid_size,
     sigma_y_map = np.zeros((grid_size, grid_size))
     rho_map     = np.zeros((grid_size, grid_size))
     # grid entris calculation
-    # for x_idx in range(grid_size):
-    #     for y_idx in range(grid_size):
-    #         s                                 = np.array([[x_span[x_idx], y_span[y_idx]]])
-    #         mu_x, mu_y, sigma_x, sigma_y, rho = kernel.nonlinear_mapping(s)
-    #         sigma_x_map[x_idx][y_idx]         = sigma_x
-    #         sigma_y_map[x_idx][y_idx]         = sigma_y
-    #         rho_map[x_idx][y_idx]             = rho
     s = np.array([ [x_span[x_idx], y_span[y_idx]] 
         for x_idx in range(grid_size) for y_idx in range(grid_size) ])
-    mu_xs, mu_ys, sigma_xs, sigma_ys, rhos = kernel.nonlinear_mapping(s)
+    # mu_xs, mu_ys, sigma_xs, sigma_ys, rhos = kernel.nonlinear_mapping(s)
+    mu_xs, mu_ys, sigma_xs, sigma_ys, rhos = \
+        kernel.mu_x(s[:,0], s[:,1]),\
+        kernel.mu_y(s[:,0], s[:,1]),\
+        kernel.sigma_x(s[:,0], s[:,1]),\
+        kernel.sigma_y(s[:,0], s[:,1]),\
+        kernel.rho(s[:,0], s[:,1])
     indices = [ [x_idx, y_idx] 
         for x_idx in range(grid_size) for y_idx in range(grid_size) ]
     for i in range(len(indices)):
@@ -64,6 +63,9 @@ def plot_spatial_kernel(path, kernel, S, grid_size,
         im_0     = axs[0].imshow(sigma_x_map, interpolation='nearest', origin='lower', cmap=cmap)
         im_1     = axs[1].imshow(sigma_y_map, interpolation='nearest', origin='lower', cmap=cmap)
         im_2     = axs[2].imshow(rho_map, interpolation='nearest', origin='lower', cmap=cmap)
+        sigma_x_clim = [sigma_x_map.min(), sigma_x_map.max()] if sigma_x_clim is None else sigma_x_clim
+        sigma_y_clim = [sigma_y_map.min(), sigma_y_map.max()] if sigma_y_clim is None else sigma_y_clim
+        rho_clim     = [rho_map.min(), rho_map.max()] if rho_clim is None else rho_clim
         print(sigma_x_map.min(), sigma_x_map.max())
         print(sigma_y_map.min(), sigma_y_map.max())
         print(rho_map.min(), rho_map.max())

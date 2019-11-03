@@ -49,70 +49,26 @@ class GaussianDiffusionKernel(object):
     by Musmeci and Vere-Jones (1992). The angle and shape of diffusion ellipse is able  
     to vary according to the location.  
     """
-    def __init__(self, 
-        layers=[20, 20], beta=1., C=1., Ws=None, bs=None,
-        SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=0.1, is_centered=True):
-        # constant configuration
-        self.MU_SCALE    = MU_SCALE
-        self.SIGMA_SHIFT = SIGMA_SHIFT
-        self.SIGMA_SCALE = SIGMA_SCALE
+    def __init__(self, mu_x=0., mu_y=0., sigma_x=1., sigma_y=1., rho=0., beta=1., C=1.):
         # kernel parameters
-        self.C           = C # kernel constant
-        self.beta        = beta
-        self.Ws          = []
-        self.bs          = []
-        self.is_centered = is_centered
-        # construct multi-layers neural networks
-        # where 2 is for x and y; And 5 is for mu_x, mu_y, sigma_x, sigma_y, rho
-        self.layers = [2] + layers + [5]
-        # construct weight & bias matrix layer by layer
-        for i in range(len(self.layers)-1):
-            if Ws is None and bs is None:
-                W = np.random.normal(scale=5.0, size=[self.layers[i], self.layers[i+1]])
-                b = np.random.normal(size=self.layers[i+1])
-                self.Ws.append(W)
-                self.bs.append(b)
-            else: 
-                if Ws[i].shape == (self.layers[i], self.layers[i+1]) and len(bs[i]) == self.layers[i+1]:
-                    self.Ws.append(Ws[i])
-                    self.bs.append(bs[i])
-                else:
-                    raise Exception("Incompatible shape of the weight matrix W=%s, b=%s at %d-th layer." % (Ws[i].shape, b[i].shape, i))
-
-    def nonlinear_mapping(self, locations):
-        """nonlinear mapping from the location space to the parameter space."""
-        # construct multi-layers neural networks
-        output = locations
-        for i in range(len(self.layers)-1):
-            output = self.__sigmoid(np.matmul(output, self.Ws[i]) + self.bs[i])
-        # project to parameters space
-        mu_xs    = (output[:, 0] - 0.5) * 2 * self.MU_SCALE
-        mu_ys    = (output[:, 1] - 0.5) * 2 * self.MU_SCALE
-        sigma_xs = output[:, 2] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_x spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
-        sigma_ys = output[:, 3] * self.SIGMA_SCALE + self.SIGMA_SHIFT # sigma_y spans (SIGMA_SHIFT, SIGMA_SHIFT + SIGMA_SCALE)
-        rhos     = output[:, 4] * 1.5 - .75                           # rho spans (-1, 1)
-        return mu_xs, mu_ys, sigma_xs, sigma_ys, rhos
+        self.C                     = C # kernel constant
+        self.beta                  = beta
+        self.mu_x, self.mu_y       = mu_x, mu_y 
+        self.sigma_x, self.sigma_y = sigma_x, sigma_y
+        self.rho                   = rho
 
     def nu(self, t, s, his_t, his_s):
         delta_s = s - his_s
         delta_t = t - his_t
         delta_x = delta_s[:, 0]
         delta_y = delta_s[:, 1]
-        mu_xs, mu_ys, sigma_xs, sigma_ys, rhos = self.nonlinear_mapping(his_s)
-        if self.is_centered:
-            mu_xs = 0
-            mu_ys = 0
-        return np.exp(- self.beta * delta_t) * \
-            (self.C / (2 * np.pi * sigma_xs * sigma_ys * delta_t * np.sqrt(1 - np.square(rhos)))) * \
-            np.exp((- 1. / (2 * delta_t * (1 - np.square(rhos)))) * \
-                ((np.square(delta_x - mu_xs) / np.square(sigma_xs)) + \
-                (np.square(delta_y - mu_ys) / np.square(sigma_ys)) - \
-                (2 * rhos * (delta_x - mu_xs) * (delta_y - mu_ys) / (sigma_xs * sigma_ys))))
-
-    @staticmethod
-    def __sigmoid(x):
-        """sigmoid activation function for nonlinear mapping"""
-        return 1. / (1. + np.exp(-x))
+        gaussian_val = np.exp(- self.beta * delta_t) * \
+            (self.C / (2 * np.pi * self.sigma_x * self.sigma_y * delta_t * np.sqrt(1 - np.square(self.rho)))) * \
+            np.exp((- 1. / (2 * delta_t * (1 - np.square(self.rho)))) * \
+                ((np.square(delta_x - self.mu_x) / np.square(self.sigma_x)) + \
+                (np.square(delta_y - self.mu_y) / np.square(self.sigma_y)) - \
+                (2 * self.rho * (delta_x - self.mu_x) * (delta_y - self.mu_y) / (self.sigma_x * self.sigma_y))))
+        return gaussian_val
 
         
 
@@ -121,42 +77,83 @@ class GaussianMixtureDiffusionKernel(object):
     A Gaussian mixture diffusion kernel function is superposed by multiple Gaussian diffusion 
     kernel function. The number of the Gaussian components is specified by n_comp. 
     """
-    def __init__(self, n_comp, layers, 
-        beta=1., C=1., SIGMA_SHIFT=.1, SIGMA_SCALE=.25, MU_SCALE=.1,
-        Wss=None, bss=None, Wphis=None):
+    def __init__(self, n_comp, w, mu_x, mu_y, sigma_x, sigma_y, rho, beta=1., C=1.):
         self.gdks   = []     # Gaussian components
-        self.Wphis  = Wphis  # weighting vectors for Gaussian components
         self.n_comp = n_comp # number of Gaussian components
+        self.w      = w      # weighting vectors for Gaussian components
         # Gaussian mixture component initialization
         for k in range(self.n_comp):
-            Ws  = Wss[k] if Wss is not None else None
-            bs  = bss[k] if bss is not None else None
             gdk = GaussianDiffusionKernel(
-                layers=layers, beta=beta, C=C, Ws=Ws, bs=bs, 
-                SIGMA_SHIFT=SIGMA_SHIFT, SIGMA_SCALE=SIGMA_SCALE, MU_SCALE=MU_SCALE, is_centered=False)
+                mu_x=mu_x[k], mu_y=mu_y[k], sigma_x=sigma_x[k], sigma_y=sigma_y[k], rho=rho[k], beta=beta, C=C)
             self.gdks.append(gdk)
-        # Gaussian mixture weighting matrix initialization
-        if self.Wphis is None:
-            self.Wphis = [ np.random.normal(scale=5.0, size=[2, 1]) for k in range(self.n_comp) ]
     
     def nu(self, t, s, his_t, his_s):
         nu = 0
         for k in range(self.n_comp):
-            phi = self._softmax(his_s, k)                   # [ n_his ]
-            nu += phi * self.gdks[k].nu(t, s, his_t, his_s) # [ n_his ]
+            nu += self.w[k] * self.gdks[k].nu(t, s, his_t, his_s)
         return nu
 
-    def _softmax(self, locations, k):
-        """
-        Gaussian mixture components are weighted by phi^k, which are computed by a softmax function, i.e., 
-        phi^k(x, y) = e^{[x y]^T w^k} / \sum_{i=1}^K e^{[x y]^T w^i}
-        """
-        numerator   = np.exp(np.matmul(locations, self.Wphis[k])).flatten()
-        denominator = np.concatenate([ 
-            np.exp(np.matmul(locations, self.Wphis[i])) 
-            for i in range(self.n_comp) ], axis=1).sum(axis=1)
-        phis        = numerator / denominator
-        return phis
+
+
+class SpatialVariantGaussianDiffusionKernel(object):
+    """
+    Spatial Variant Gaussian diffusion kernel function
+    """
+    def __init__(self, 
+        f_mu_x=lambda x, y: 0., f_mu_y=lambda x, y: 0., 
+        f_sigma_x=lambda x, y: 1., f_sigma_y=lambda x, y: 1., 
+        f_rho=lambda x, y: 0., beta=1., C=1.):
+        # kernel parameters
+        self.C                     = C # kernel constant
+        self.beta                  = beta
+        self.mu_x, self.mu_y       = f_mu_x, f_mu_y 
+        self.sigma_x, self.sigma_y = f_sigma_x, f_sigma_y
+        self.rho                   = f_rho
+
+    def nu(self, t, s, his_t, his_s):
+        delta_s = s - his_s
+        delta_t = t - his_t
+        delta_x = delta_s[:, 0]
+        delta_y = delta_s[:, 1]
+        mu_xs, mu_ys, sigma_xs, sigma_ys, rhos = \
+            self.mu_x(his_s[:,0], his_s[:,1]),\
+            self.mu_y(his_s[:,0], his_s[:,1]),\
+            self.sigma_x(his_s[:,0], his_s[:,1]),\
+            self.sigma_y(his_s[:,0], his_s[:,1]),\
+            self.rho(his_s[:,0], his_s[:,1])
+        gaussian_val = np.exp(- self.beta * delta_t) * \
+            (self.C / (2 * np.pi * sigma_xs * sigma_ys * delta_t * np.sqrt(1 - np.square(rhos)))) * \
+            np.exp((- 1. / (2 * delta_t * (1 - np.square(rhos)))) * \
+                ((np.square(delta_x - mu_xs) / np.square(sigma_xs)) + \
+                (np.square(delta_y - mu_ys) / np.square(sigma_ys)) - \
+                (2 * rhos * (delta_x - mu_xs) * (delta_y - mu_ys) / (sigma_xs * sigma_ys))))
+        return gaussian_val
+
+
+
+class SpatialVariantGaussianMixtureDiffusionKernel(object):
+    """
+    Spatial Variant Gaussian mixture diffusion kernel function
+    """
+    def __init__(self, n_comp, w, f_mu_x, f_mu_y, f_sigma_x, f_sigma_y, f_rho, beta=1., C=1.):
+        # kernel parameters
+        self.gdks   = []     # Gaussian components
+        self.n_comp = n_comp # number of Gaussian components
+        self.w      = w      # weighting vectors for Gaussian components
+        # Gaussian mixture component initialization
+        for k in range(self.n_comp):
+            gdk = SpatialVariantGaussianDiffusionKernel(
+                f_mu_x=f_mu_x[k], f_mu_y=f_mu_y[k], 
+                f_sigma_x=f_sigma_x[k], f_sigma_y=f_sigma_y[k], 
+                f_rho=f_rho[k], beta=beta, C=C)
+            self.gdks.append(gdk)
+
+    def nu(self, t, s, his_t, his_s):
+        nu = 0
+        for k in range(self.n_comp):
+            nu += self.w[k] * self.gdks[k].nu(t, s, his_t, his_s)
+        return nu
+
 
 
 class HawkesLam(object):
