@@ -4,7 +4,7 @@
 import numpy as np
 
 import matplotlib.pyplot as plt
-from stppg import HawkesLam, SpatialTemporalPointProcess, StdDiffusionKernel, GaussianDiffusionKernel, GaussianMixtureDiffusionKernel
+from stppg import HawkesLam, SpatialTemporalPointProcess, StdDiffusionKernel, CustomizedDiffusionKernel, GaussianDiffusionKernel, GaussianMixtureDiffusionKernel
 from utils import plot_spatio_temporal_points, plot_spatial_intensity, plot_spatial_kernel, DataAdapter
 
 def test_std_diffusion():
@@ -127,10 +127,10 @@ def test_pretrain_gaussian_mixture_diffusion():
 
 
 if __name__ == '__main__':
-    np.random.seed(1)
+    # np.random.seed(1)
     np.set_printoptions(suppress=True)
 
-    test_pretrain_gaussian_mixture_diffusion()
+    test_std_diffusion()
 
     # T = [0., 10.]
     # S = [[-1., 1.], [-1., 1.]]
