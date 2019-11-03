@@ -119,7 +119,6 @@ def test_spatial_variant_gaussian_diffusion():
     print(sizes)
 
     # read or save to local npy file.
-    points = np.load('results/spatial-variant-gaussian.npy')
     np.save('results/spatial-variant-gaussian.npy', points)
 
     # plot intensity of the process over the time
@@ -162,7 +161,7 @@ if __name__ == '__main__':
     # np.random.seed(1)
     np.set_printoptions(suppress=True)
 
-    test_gaussian_mixture_diffusion()
+    test_spatial_variant_gaussian_diffusion()
 
     # T = [0., 10.]
     # S = [[-1., 1.], [-1., 1.]]
