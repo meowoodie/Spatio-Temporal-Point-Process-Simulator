@@ -170,7 +170,7 @@ class HawkesLam(object):
         going to inspect. Prior to that are the past locations which have
         occurred.
         """
-        if len(his_t) > 1:
+        if len(his_t) > 0:
             val = self.mu + np.sum(self.kernel.nu(t, s, his_t, his_s))
         else:
             val = self.mu
