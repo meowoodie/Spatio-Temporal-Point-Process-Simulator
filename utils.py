@@ -77,12 +77,12 @@ def plot_spatial_kernel(path, kernel, S, grid_size,
         tick_1 = np.linspace(sigma_y_clim[0], sigma_y_clim[1], 5).tolist()
         tick_2 = np.linspace(rho_clim[0], rho_clim[1], 5).tolist()
         # set x, y labels for subplots
-        axs[0].set_xlabel(r'$x$')
-        axs[1].set_xlabel(r'$x$')
-        axs[2].set_xlabel(r'$x$')
-        axs[0].set_ylabel(r'$y$')
-        axs[1].set_ylabel(r'$y$')
-        axs[2].set_ylabel(r'$y$')
+        axs[0].set_xlabel(r'$x$', fontsize=25)
+        axs[1].set_xlabel(r'$x$', fontsize=25)
+        axs[2].set_xlabel(r'$x$', fontsize=25)
+        axs[0].set_ylabel(r'$y$', fontsize=25)
+        axs[1].set_ylabel(r'$y$', fontsize=25)
+        axs[2].set_ylabel(r'$y$', fontsize=25)
         # remove x, y ticks
         axs[0].get_xaxis().set_ticks([])
         axs[1].get_xaxis().set_ticks([])
@@ -91,19 +91,19 @@ def plot_spatial_kernel(path, kernel, S, grid_size,
         axs[1].get_yaxis().set_ticks([])
         axs[2].get_yaxis().set_ticks([])
         # set subtitle for subplots
-        axs[0].set_title(r'$\sigma_x$')
-        axs[1].set_title(r'$\sigma_y$')
-        axs[2].set_title(r'$\rho$')
+        axs[0].set_title(r'$\sigma_x$', fontsize=25)
+        axs[1].set_title(r'$\sigma_y$', fontsize=25)
+        axs[2].set_title(r'$\rho$', fontsize=25)
         # plot colorbar
-        cbar_0 = fig.colorbar(im_0, ax=axs[0], ticks=tick_0, fraction=0.046, pad=0.08, orientation="horizontal")
-        cbar_1 = fig.colorbar(im_1, ax=axs[1], ticks=tick_1, fraction=0.046, pad=0.08, orientation="horizontal")
-        cbar_2 = fig.colorbar(im_2, ax=axs[2], ticks=tick_2, fraction=0.046, pad=0.08, orientation="horizontal")
+        cbar_0 = fig.colorbar(im_0, ax=axs[0], ticks=tick_0, fraction=0.046, pad=0.12, orientation="horizontal")
+        cbar_1 = fig.colorbar(im_1, ax=axs[1], ticks=tick_1, fraction=0.046, pad=0.12, orientation="horizontal")
+        cbar_2 = fig.colorbar(im_2, ax=axs[2], ticks=tick_2, fraction=0.046, pad=0.12, orientation="horizontal")
         # set font size of the ticks of the colorbars
         cbar_0.ax.tick_params(labelsize=5) 
         cbar_1.ax.tick_params(labelsize=5) 
         cbar_2.ax.tick_params(labelsize=5) 
         # adjust the width of the gap between subplots
-        plt.subplots_adjust(wspace=0.2)
+        plt.subplots_adjust(wspace=0.3)
         pdf.savefig(fig)
 
 def plot_spatial_intensity(lam, points, S, t_slots, grid_size, interval):
