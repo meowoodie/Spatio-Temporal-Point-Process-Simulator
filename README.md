@@ -5,19 +5,19 @@ A set of Python tools called `STPPG` for simulating any form of Marked Spatio-te
 
 ### Usage
 
-There are two vital files included in this repo: 
+There are two critical files included in this repo: 
 
-- `stppg.py` basic generators for homogeneous and inhomogeneous univariate point process, as well as different kinds of intensity classes and kernel functions.
-- `utils.py` Some simple plotting functions for visualizing the point process simulation.
+- `stppg.py` includes basic generators for homogeneous and inhomogeneous univariate point process, as well as various types of intensity classes and kernel functions.
+- `utils.py` includes plotting functions for visualizing the point process simulation.
 
-For simulating any parametric point process defined in references, we need to define the `parametric form` of its conditional density  and `generating space` (time, location, and marks). 
+For simulating any parametric point process defined in references, we first need to define the `parametric form` of its conditional density and `event space` (time, location, and marks). 
 
-- To define the form of the conditional density of a point process, a `Lam` object defined in `stppg.py` has to be substantiated with corresponding parameters. The most important parameters of a conditional intensity `Lam` is defined in its kernel function. See the example below.
-- Regard the space of the point process, time space is specified by 1D two-elements list `T`, and location & mark space is jointly specified by 2D list `S`, where first two sub-lists indicate the location X and Y, and the following sub-lists indicate the mark space.  
+- To define the form of the conditional density of a point process, a `Lam` object defined in `stppg.py` needs to be substantiated accordingly. The most important parameters of a conditional intensity `Lam` is defined in its kernel function. See the example below.
+- For spatio-temporal point processes, time is specified by 1D two-elements list `T`, and location & mark space is jointly specified by 2D list `S`, where first two sub-lists indicate the location X and Y, and the following sub-lists indicate the mark space.  
 
 ### Examples
 
-A simple example for simulating a spatio-temporal hawkes point process equipped with a standard diffusion kernel by using `stppg`.
+A simple example of simulating a spatio-temporal hawkes point process equipped with a standard diffusion kernel by using `stppg`.
 ```python
 from stppg import StdDiffusionKernel, HawkesLam, MarkedSpatialTemporalPointProcess
 from utils import plot_spatio_temporal_points, plot_spatial_intensity
