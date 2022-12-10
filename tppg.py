@@ -12,6 +12,7 @@ import sys
 import utils
 import arrow
 import numpy as np
+from tqdm import tqdm
 from scipy.stats import norm
 import matplotlib.pyplot as plt
 
@@ -124,7 +125,8 @@ class TemporalPointProcess(object):
             # - if lam_value is greater than lam_bar, then skip the generation process
             #   and return None.
             if lam_value > lam_bar:
-                print("intensity %f is greater than upper bound %f." % (lam_value, lam_bar), file=sys.stderr)
+                if verbose:
+                    print("intensity %f is greater than upper bound %f." % (lam_value, lam_bar), file=sys.stderr)
                 return None
             # accept
             if lam_value >= D * lam_bar:
@@ -149,6 +151,7 @@ class TemporalPointProcess(object):
         max_len     = 0
         b           = 0
         # generate inhomogeneous poisson points iterately
+        pbar = tqdm(total = batch_size, desc="Generating ...")
         while b < batch_size:
             homo_points = self._homogeneous_poisson_sampling(T)
             points      = self._inhomogeneous_poisson_thinning(homo_points, verbose)
@@ -157,8 +160,10 @@ class TemporalPointProcess(object):
             max_len = points.shape[0] if max_len < points.shape[0] else max_len
             points_list.append(points)
             sizes.append(len(points))
-            print("[%s] %d-th sequence is generated." % (arrow.now(), b+1), file=sys.stderr)
+            pbar.update(1)
             b += 1
+            if verbose:
+                print("[%s] %d-th sequence is generated." % (arrow.now(), b+1), file=sys.stderr)
         # fit the data into a tensor
         data = np.zeros((batch_size, max_len))
         for b in range(batch_size):
