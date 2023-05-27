@@ -19,7 +19,7 @@ For simulating any parametric point process defined in references, we first need
 
 A simple example of simulating a spatio-temporal hawkes point process equipped with a standard diffusion kernel by using `stppg`.
 ```python
-from stppg import StdDiffusionKernel, HawkesLam, MarkedSpatialTemporalPointProcess
+from stppg import StdDiffusionKernel, HawkesLam
 from utils import plot_spatio_temporal_points, plot_spatial_intensity
 
 np.random.seed(0)
